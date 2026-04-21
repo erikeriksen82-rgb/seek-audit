@@ -22,25 +22,36 @@ export async function skrapNettside(url: string): Promise<WebsiteData> {
     )
     await page.setViewport({ width: 1280, height: 800 })
 
-    await page.goto(normalUrl, { waitUntil: 'networkidle2', timeout: 15000 })
+    // Track all network requests to catch dynamically loaded widgets
+    const networkUrls: string[] = []
+    page.on('request', req => networkUrls.push(req.url().toLowerCase()))
 
-    const data = await page.evaluate(() => {
+    await page.goto(normalUrl, { waitUntil: 'networkidle2', timeout: 15000 })
+    // Extra wait for lazy-loaded widgets (Crisp, Tidio, etc.)
+    await new Promise(r => setTimeout(r, 3000))
+
+    const networkUrlsStr = networkUrls.join(' ')
+    const data = await page.evaluate((networkUrlsFromNode: string) => {
       const html = document.documentElement.innerHTML.toLowerCase()
       const scripts = Array.from(document.querySelectorAll('script[src]'))
         .map(s => (s as HTMLScriptElement).src.toLowerCase())
       const allSrc = scripts.join(' ')
 
-      // Chatbot-deteksjon
+      // Combine Puppeteer network log + in-page performance API
+      const inPageReqs = performance.getEntriesByType('resource')
+        .map((e: any) => e.name.toLowerCase()).join(' ')
+      const allNetReqs = networkUrlsFromNode + ' ' + inPageReqs
       const chatbotSignaler: Record<string, boolean> = {
-        intercom: !!(window as any).Intercom || html.includes('intercom'),
-        tidio: !!(window as any).tidioChatApi || allSrc.includes('code.tidio.co'),
-        drift: !!(window as any).drift || html.includes('drift-widget'),
-        crisp: !!(window as any).$crisp || allSrc.includes('crisp.chat'),
-        livechat: !!(window as any).LC_API || allSrc.includes('livechatinc.com'),
-        tawk: !!(window as any).Tawk_API || allSrc.includes('tawk.to'),
-        zendesk: !!(window as any).zE || allSrc.includes('zopim') || allSrc.includes('zendesk'),
-        ghl: allSrc.includes('leadconnectorhq.com') || allSrc.includes('highlevel.com') || html.includes('hl-chat'),
-        trengo: allSrc.includes('trengo'),
+        intercom: !!(window as any).Intercom || html.includes('intercom.io') || allNetReqs.includes('intercom'),
+        tidio: !!(window as any).tidioChatApi || allSrc.includes('code.tidio.co') || allNetReqs.includes('tidio'),
+        drift: !!(window as any).drift || html.includes('drift-widget') || allNetReqs.includes('js.driftt.com'),
+        crisp: !!(window as any).$crisp || html.includes('crisp.chat') || html.includes('$crisp') || allNetReqs.includes('crisp.chat') || allSrc.includes('crisp.chat'),
+        livechat: !!(window as any).LC_API || allSrc.includes('livechatinc.com') || allNetReqs.includes('livechatinc'),
+        tawk: !!(window as any).Tawk_API || allSrc.includes('tawk.to') || allNetReqs.includes('tawk.to'),
+        zendesk: !!(window as any).zE || allSrc.includes('zopim') || allNetReqs.includes('zendesk') || html.includes('zendesk'),
+        ghl: allSrc.includes('leadconnectorhq.com') || allSrc.includes('highlevel.com') || html.includes('hl-chat') || allNetReqs.includes('leadconnector'),
+        trengo: allSrc.includes('trengo') || allNetReqs.includes('trengo'),
+        freshchat: !!(window as any).fcWidget || allNetReqs.includes('freshchat') || html.includes('freshchat'),
       }
       const hasChatbot = Object.values(chatbotSignaler).some(Boolean)
       const chatbotType = hasChatbot
@@ -159,7 +170,7 @@ export async function skrapNettside(url: string): Promise<WebsiteData> {
         hasNewsletterSignup,
         hasAutoResponse,
       }
-    })
+    }, networkUrlsStr)
 
     const hasSSL = normalUrl.startsWith('https://')
 
