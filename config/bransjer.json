@@ -1,0 +1,162 @@
+{
+  "rorlegger": {
+    "navn": "Rørlegger",
+    "nace_koder": ["43.221", "43.22"],
+    "prioritet": "hoy",
+    "primaer_svikt": "respons_gap",
+    "parametre": {
+      "snittjobb_kr": 35000,
+      "snittjobb_prosjekt_kr": 250000,
+      "margin_prosent": 30,
+      "henvendelser_per_uke_per_ansatt": 1.5,
+      "andel_etter_arbeidstid": 0.35,
+      "andel_tapt_sen_respons": 0.5,
+      "bom_befaringer_per_uke_per_ansatt": 0.8,
+      "timer_per_bom": 1.5,
+      "timepris_fag": 650,
+      "andel_hoyverdi": 0.25,
+      "andel_tapt_oppfolging": 0.5
+    },
+    "pitch_vinkel": "Rørlegger er akutt-drevet. Første respons vinner. Hvem svarer Kari først når hun sender skjema kl 19 onsdag?"
+  },
+  "elektriker": {
+    "navn": "Elektriker",
+    "nace_koder": ["43.210"],
+    "prioritet": "hoy",
+    "primaer_svikt": "ressurslekkasje",
+    "parametre": {
+      "snittjobb_kr": 28000,
+      "snittjobb_prosjekt_kr": 180000,
+      "margin_prosent": 32,
+      "henvendelser_per_uke_per_ansatt": 1.8,
+      "andel_etter_arbeidstid": 0.25,
+      "andel_tapt_sen_respons": 0.45,
+      "bom_befaringer_per_uke_per_ansatt": 1.2,
+      "timer_per_bom": 1.5,
+      "timepris_fag": 700,
+      "andel_hoyverdi": 0.3,
+      "andel_tapt_oppfolging": 0.4
+    },
+    "pitch_vinkel": "Elektrobransjen har dokumentert kompetansemangel. Hver fagtime på feil kunde er direkte tap. Hvor mange bom-befaringer tar dere i uka?"
+  },
+  "tomrer": {
+    "navn": "Tømrer / Snekker",
+    "nace_koder": ["43.32", "43.320", "43.39"],
+    "prioritet": "hoy",
+    "primaer_svikt": "ressurslekkasje",
+    "parametre": {
+      "snittjobb_kr": 45000,
+      "snittjobb_prosjekt_kr": 320000,
+      "margin_prosent": 28,
+      "henvendelser_per_uke_per_ansatt": 1.2,
+      "andel_etter_arbeidstid": 0.2,
+      "andel_tapt_sen_respons": 0.35,
+      "bom_befaringer_per_uke_per_ansatt": 1.5,
+      "timer_per_bom": 2,
+      "timepris_fag": 650,
+      "andel_hoyverdi": 0.35,
+      "andel_tapt_oppfolging": 0.5
+    },
+    "pitch_vinkel": "Tømrere sløser mest tid på gratis befaringer uten kjøpsintensjon. Hvor mange tilbud uka fører til ingenting?"
+  },
+  "baderom": {
+    "navn": "Bad / Totalrenovering",
+    "nace_koder": ["43.3", "41.200"],
+    "prioritet": "hoy",
+    "primaer_svikt": "oppfolgingssvikt",
+    "parametre": {
+      "snittjobb_kr": 180000,
+      "snittjobb_prosjekt_kr": 450000,
+      "margin_prosent": 25,
+      "henvendelser_per_uke_per_ansatt": 0.8,
+      "andel_etter_arbeidstid": 0.3,
+      "andel_tapt_sen_respons": 0.4,
+      "bom_befaringer_per_uke_per_ansatt": 1,
+      "timer_per_bom": 2.5,
+      "timepris_fag": 700,
+      "andel_hoyverdi": 0.8,
+      "andel_tapt_oppfolging": 0.55
+    },
+    "pitch_vinkel": "Bad-kunder henter 3-4 tilbud over dager og uker. Hvem følger opp når kunden ikke svarer etter 3 dager?"
+  },
+  "tak": {
+    "navn": "Tak / Fasade",
+    "nace_koder": ["43.910", "43.99"],
+    "prioritet": "middels_hoy",
+    "primaer_svikt": "sesongfiltrering",
+    "parametre": {
+      "snittjobb_kr": 85000,
+      "snittjobb_prosjekt_kr": 380000,
+      "margin_prosent": 27,
+      "henvendelser_per_uke_per_ansatt": 1,
+      "andel_etter_arbeidstid": 0.2,
+      "andel_tapt_sen_respons": 0.3,
+      "bom_befaringer_per_uke_per_ansatt": 1,
+      "timer_per_bom": 2,
+      "timepris_fag": 650,
+      "andel_hoyverdi": 0.6,
+      "andel_tapt_oppfolging": 0.45
+    },
+    "pitch_vinkel": "Tak er sesongdrevet. Peak-kapasiteten er kritisk. Hva hvis sesongen fylles med feil jobber?"
+  },
+  "vvs_varmepumpe": {
+    "navn": "VVS / Varmepumpe",
+    "nace_koder": ["43.22", "43.220"],
+    "prioritet": "middels",
+    "primaer_svikt": "routing",
+    "parametre": {
+      "snittjobb_kr": 55000,
+      "snittjobb_prosjekt_kr": 280000,
+      "margin_prosent": 28,
+      "henvendelser_per_uke_per_ansatt": 1.6,
+      "andel_etter_arbeidstid": 0.3,
+      "andel_tapt_sen_respons": 0.45,
+      "bom_befaringer_per_uke_per_ansatt": 1,
+      "timer_per_bom": 1.5,
+      "timepris_fag": 700,
+      "andel_hoyverdi": 0.4,
+      "andel_tapt_oppfolging": 0.45
+    },
+    "pitch_vinkel": "VVS har miks av service og prosjekt. Uten routing behandles alle likt — akutt lekkasje og varmepumpe-spørsmål havner i samme kø."
+  },
+  "mur_betong": {
+    "navn": "Mur / Puss / Betong",
+    "nace_koder": ["43.99", "43.991", "43.310"],
+    "prioritet": "middels",
+    "primaer_svikt": "pre_kvalifisering",
+    "parametre": {
+      "snittjobb_kr": 65000,
+      "snittjobb_prosjekt_kr": 220000,
+      "margin_prosent": 26,
+      "henvendelser_per_uke_per_ansatt": 0.8,
+      "andel_etter_arbeidstid": 0.15,
+      "andel_tapt_sen_respons": 0.25,
+      "bom_befaringer_per_uke_per_ansatt": 1.2,
+      "timer_per_bom": 2.5,
+      "timepris_fag": 650,
+      "andel_hoyverdi": 0.3,
+      "andel_tapt_oppfolging": 0.4
+    },
+    "pitch_vinkel": "Mur-jobber krever avklart scope tidlig. Ender dere med å gjøre gratis prosjektering for kunder som forsvinner?"
+  },
+  "maler": {
+    "navn": "Maler / Glassarbeid",
+    "nace_koder": ["43.340", "43.341"],
+    "prioritet": "middels",
+    "primaer_svikt": "oppfolgingssvikt",
+    "parametre": {
+      "snittjobb_kr": 40000,
+      "snittjobb_prosjekt_kr": 150000,
+      "margin_prosent": 27,
+      "henvendelser_per_uke_per_ansatt": 1.2,
+      "andel_etter_arbeidstid": 0.15,
+      "andel_tapt_sen_respons": 0.3,
+      "bom_befaringer_per_uke_per_ansatt": 1,
+      "timer_per_bom": 1.5,
+      "timepris_fag": 600,
+      "andel_hoyverdi": 0.3,
+      "andel_tapt_oppfolging": 0.45
+    },
+    "pitch_vinkel": "Malerjobber er prissensitive og sammenlignes mye. Uten oppfølging taper dere på ikke å være synlig når kunden bestemmer seg."
+  }
+}

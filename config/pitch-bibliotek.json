@@ -1,0 +1,63 @@
+{
+  "apner_maler": {
+    "het_lead_respons": "{navn}, jeg har sett på {bedrift} i 5 minutter. Dere har {styrke}, så henvendelsene kommer inn. Men jeg vil stille ett spørsmål: når en kunde sender skjema kl 19 onsdag, hvor lang tid tar det før de hører fra dere? Det er der vi ser {bransje}-bedrifter som dere taper mest.",
+    "het_lead_oppfolging": "{navn}, jeg ringer fordi jeg har sett noe hos {bedrift} som koster dere penger — uten at dere vet det. Dere sender tilbud på prosjekter, men har ingen oppfølgingssekvens når kunden ikke svarer. Hvor mange tilbud følger dere aktivt opp etter 3 dager?",
+    "het_lead_synlighet": "{navn}, rask sjekk: dere rangerer på side 2 for '{bransje} {by}', og {konkurrent} kjører aktive annonser mot samme søkeord. Har dere sett hvor mye volum som går til dem akkurat nå?",
+    "varm_lead": "{navn}, jeg ser dere har {styrke} — det er solid. Men jeg lurer på noe: hva skjer med en kundehenvendelse som kommer inn på en lørdag ettermiddag?"
+  },
+
+  "replikker_per_flagg": {
+    "ingen_chatbot": [
+      "Henrik, 8 av 10 kunder velger den som svarer først. Hvem svarer dem først, dere eller {konkurrent}?",
+      "Når kunden sender skjema kl 22, hvor lang tid tar det før noen i {bedrift} leser det?",
+      "Hva hvis jeg sa at dere kunne svare hver eneste henvendelse innen 30 sekunder — også søndag kveld?"
+    ],
+    "ingen_auto_respons": [
+      "Rask test: hvis jeg sender dere et skjema nå, hva skjer? Får jeg en bekreftelse, eller blir det stille til dere har tid?",
+      "Den følelsen kunden får i de første minuttene — etter skjema-send — er der kjøpet egentlig vinnes eller tapes."
+    ],
+    "ingen_booking_kalender": [
+      "Hvor mange timer i uka bruker noen hos dere på å finne en tid som passer med kunden?",
+      "Hva om kunden kunne bestille befaring rett inn i deres kalender selv — døgnet rundt?"
+    ],
+    "gratis_befaring_uten_filter": [
+      "Hvor mange befaringer i uka ender i ingenting? Ikke i kroner — men i fagtimer dere aldri får igjen?",
+      "Gratis befaring er fint. Men uten filter: hvor mange ganger kjører dere til Kari på Stabekk som bare henter tilbud nummer fire?",
+      "Fagfolkene deres er deres dyreste ressurs. Hva koster det å sende dem på feil kunder?"
+    ],
+    "ingen_kvalifisering_skjema": [
+      "Skjemaet deres tar navn og telefon. Når dere ringer tilbake — vet dere allerede om det er 20k eller 200k?",
+      "Et skjema med tre ekstra spørsmål kan filtrere bort 30% av bom-samtaler. Har dere testet det?"
+    ],
+    "ingen_crm_spor": [
+      "De tilbudene dere sendte i forrige måned — hvor er de nå? Hvem sjekker om kunden bestemte seg?",
+      "Baderomskunder henter 3-4 tilbud og bestemmer seg etter 2-3 uker. Hvem av dere sørger for at {bedrift} er synlig når de bestemmer seg?"
+    ],
+    "ingen_google_ads": [
+      "'{bransje} {by}' søkes ~{sokvolum} ganger i måneden. Dere er usynlig på side 1. {konkurrent} kjører annonser der akkurat nå. Skal jeg vise deg?",
+      "For {bransje}-bedrifter er de betalte klikkene ofte de mest lønnsomme — fordi intensjonen er høyest. Hvorfor kjører dere ikke der?"
+    ],
+    "ikke_topp_3_organisk": [
+      "Dere rangerer #{rangering} organisk på det viktigste søket. Topp 3 tar 75% av klikkene. Hvor mye volum mister dere?"
+    ],
+    "ingen_meta_ads": [
+      "Bad og totalrenovering bestemmes på kveldstid i sofaen — på Instagram. Er dere der når kundene er der?"
+    ],
+    "lastetid_for_hoy": [
+      "Nettsiden deres bruker {sekunder} sekunder på å laste på mobil. 40% gir opp etter 3 sekunder. Hvor mange gir opp før de rekker å se kontaktskjemaet?"
+    ]
+  },
+
+  "styrker_anerkjennelse": {
+    "mange_anmeldelser": "Dere har {antall} anmeldelser med {rating} stjerner — bedre enn 60% av {bransje} i området. Det fundamentet er sterkt.",
+    "etablert_lenge": "{ar} år i markedet. Det betyr dere kan faget. Det som mangler er ikke håndverket — det er salgsleddet rundt.",
+    "god_nettside": "Nettsiden er ryddig og mobilvennlig. Fundamentet finnes. Dere mangler bare det som skjer etter at kunden trykker 'send'.",
+    "kapasitet": "{ansatte} ansatte og {omsetning} i omsetning — dere har kapasitet til å ta imot mer. Det gjør regnestykket enkelt."
+  },
+
+  "avslutninger": {
+    "bestill_mote": "Jeg sender deg audit-rapporten jeg har laget på {bedrift}. Ta en titt, så kan vi ta en kort prat i morgen — 15 minutter, ingen forpliktelser. Passer kl 10?",
+    "intro_pilot": "Vi har en 30-dagers pilot som koster 5 990 totalt. Du får én rapport etter 30 dager som viser nøyaktig hva som funker. Ingen binding. Er det interessant?",
+    "regnestykke_close": "Snittjobben din er {snittjobb}. Med 30% margin er det {bidrag} per jobb. SEEK Drift koster {kostnad}/mnd totalt. Én ekstra jobb dekker {antall_mnd} måneder. Vi starter?"
+  }
+}

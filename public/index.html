@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SEEK. Audit — Portal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --cream: #F5F1E8;
+    --cream-2: #EFEADD;
+    --dark: #1A1612;
+    --gold: #C8881E;
+    --gold-2: #B87910;
+    --gold-soft: rgba(200, 136, 30, 0.12);
+    --muted: #6B645A;
+    --muted-2: #8B8479;
+    --border: rgba(26, 22, 18, 0.1);
+    --border-strong: rgba(26, 22, 18, 0.18);
+  }
+
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: var(--cream);
+    color: var(--dark);
+    min-height: 100vh;
+  }
+
+  /* NAV */
+  .nav {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 24px 48px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(245, 241, 232, 0.9);
+    border-radius: 100px;
+    border: 1px solid var(--border);
+    margin-top: 20px;
+    backdrop-filter: blur(12px);
+    position: sticky;
+    top: 20px;
+    z-index: 50;
+  }
+  .nav-left { display: flex; align-items: center; gap: 48px; }
+  .nav-logo { font-weight: 900; font-size: 22px; letter-spacing: -0.02em; color: var(--dark); }
+  .nav-logo .sub { color: var(--gold); font-weight: 600; margin-left: 2px; }
+  .nav-links { display: flex; gap: 40px; list-style: none; }
+  .nav-links a { font-size: 14px; font-weight: 500; color: var(--muted); text-decoration: none; transition: color 0.2s; }
+  .nav-links a:hover { color: var(--dark); }
+  .nav-right { display: flex; align-items: center; gap: 24px; }
+  .nav-login { font-size: 14px; font-weight: 500; color: var(--muted); text-decoration: none; }
+  .nav-cta { font-size: 14px; font-weight: 600; color: var(--cream); background: var(--gold); padding: 12px 24px; border-radius: 100px; text-decoration: none; transition: background 0.2s; }
+  .nav-cta:hover { background: var(--gold-2); }
+
+  /* HERO */
+  .hero {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 100px 48px 80px;
+    text-align: center;
+  }
+  .hero-title {
+    font-weight: 900;
+    font-size: clamp(56px, 8vw, 104px);
+    letter-spacing: -0.045em;
+    line-height: 0.98;
+    margin-bottom: 36px;
+    color: var(--dark);
+  }
+  .hero-title .highlight {
+    color: var(--gold);
+    display: inline-block;
+    position: relative;
+    padding: 0 16px;
+  }
+  .hero-title .highlight::before {
+    content: '';
+    position: absolute;
+    inset: -4px -8px;
+    border: 2px dashed var(--gold);
+    border-radius: 12px;
+    pointer-events: none;
+  }
+  .hero-subtitle {
+    font-size: 19px;
+    font-weight: 400;
+    color: var(--muted);
+    line-height: 1.6;
+    max-width: 720px;
+    margin: 0 auto 48px;
+  }
+  .hero-subtitle strong { color: var(--dark); font-weight: 600; }
+
+  /* SOSIAL PROOF */
+  .social-proof {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--cream-2);
+    padding: 10px 22px;
+    border-radius: 100px;
+    margin-bottom: 32px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--dark);
+    border: 1px solid var(--border);
+  }
+  .social-proof .dot { width: 8px; height: 8px; background: var(--gold); border-radius: 50%; display: inline-block; }
+
+  /* SEARCH */
+  .search-wrap {
+    max-width: 680px;
+    margin: 0 auto 32px;
+    position: relative;
+  }
+  .search-form {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 14px;
+  }
+  .search-input-wrap { position: relative; }
+  .search-icon {
+    position: absolute;
+    left: 22px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 20px;
+    height: 20px;
+    color: var(--muted-2);
+    pointer-events: none;
+  }
+  .search-input {
+    width: 100%;
+    height: 68px;
+    padding: 0 24px 0 56px;
+    background: #FFFFFF;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--dark);
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    font-family: 'Inter', sans-serif;
+  }
+  .search-input::placeholder { color: var(--muted-2); font-weight: 400; }
+  .search-input:focus { border-color: var(--gold); box-shadow: 0 0 0 3px var(--gold-soft); }
+  .search-button {
+    height: 68px;
+    padding: 0 36px;
+    background: var(--gold);
+    color: var(--cream);
+    border: none;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: background 0.2s;
+    font-family: 'Inter', sans-serif;
+    white-space: nowrap;
+  }
+  .search-button:hover { background: var(--gold-2); }
+  .search-button:disabled { background: var(--muted-2); cursor: not-allowed; }
+  .search-button .arrow { font-size: 18px; }
+
+  /* AUTOCOMPLETE DROPDOWN */
+  .autocomplete {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    right: 0;
+    background: #FFFFFF;
+    border: 1px solid var(--border-strong);
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(26,22,18,0.12);
+    z-index: 100;
+    display: none;
+    overflow: hidden;
+  }
+  .autocomplete.open { display: block; }
+  .autocomplete-item {
+    padding: 14px 20px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: background 0.15s;
+    border-bottom: 1px solid var(--border);
+  }
+  .autocomplete-item:last-child { border-bottom: none; }
+  .autocomplete-item:hover { background: var(--cream); }
+  .autocomplete-navn { font-size: 15px; font-weight: 600; color: var(--dark); }
+  .autocomplete-meta { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .autocomplete-orgnr { font-size: 12px; color: var(--muted-2); font-family: monospace; }
+
+  /* LOADING */
+  .loading-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(245,241,232,0.85);
+    backdrop-filter: blur(8px);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 20px;
+  }
+  .loading-overlay.active { display: flex; }
+  .loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid var(--border-strong);
+    border-top-color: var(--gold);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-tekst { font-size: 16px; font-weight: 500; color: var(--dark); }
+  .loading-sub { font-size: 13px; color: var(--muted); }
+
+  /* QUICK EXAMPLES */
+  .quick-examples {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 20px;
+  }
+  .quick-label { font-size: 13px; color: var(--muted); margin-right: 4px; align-self: center; }
+  .quick-chip {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--muted);
+    background: var(--cream-2);
+    padding: 8px 16px;
+    border-radius: 100px;
+    border: 1px solid var(--border);
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: 'Inter', sans-serif;
+  }
+  .quick-chip:hover { background: #FFFFFF; border-color: var(--gold); color: var(--dark); }
+
+  /* TRUST */
+  .trust-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    margin-top: 48px;
+  }
+  .avatars { display: flex; }
+  .avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 2px solid var(--cream);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--dark);
+    margin-left: -10px;
+  }
+  .avatar:first-child { margin-left: 0; }
+  .avatar-1 { background: #E8C590; }
+  .avatar-2 { background: #D4A876; }
+  .avatar-3 { background: #C89560; }
+  .trust-text { font-size: 14px; color: var(--muted); }
+  .trust-text strong { color: var(--dark); font-weight: 600; }
+
+  /* HVORDAN */
+  .how-section {
+    max-width: 1400px;
+    margin: 100px auto 0;
+    padding: 80px 48px;
+  }
+  .section-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    justify-content: center;
+    margin-bottom: 20px;
+  }
+  .section-label::before, .section-label::after {
+    content: '';
+    display: block;
+    width: 28px;
+    height: 1px;
+    background: var(--gold);
+  }
+  .section-title {
+    font-weight: 900;
+    font-size: clamp(36px, 5vw, 56px);
+    letter-spacing: -0.03em;
+    text-align: center;
+    line-height: 1.05;
+    margin-bottom: 72px;
+  }
+  .section-title .dot { color: var(--gold); }
+  .steps-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; }
+  .step {
+    background: var(--cream-2);
+    padding: 36px 32px;
+    border-radius: 16px;
+    border: 1px solid var(--border);
+    position: relative;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+  .step:hover { border-color: var(--gold); transform: translateY(-2px); }
+  .step-num {
+    font-weight: 900;
+    font-size: 56px;
+    letter-spacing: -0.03em;
+    -webkit-text-stroke: 1.5px var(--gold);
+    color: transparent;
+    line-height: 1;
+    margin-bottom: 24px;
+  }
+  .step-title { font-weight: 700; font-size: 22px; letter-spacing: -0.02em; line-height: 1.25; margin-bottom: 12px; color: var(--dark); }
+  .step-desc { font-size: 14px; color: var(--muted); line-height: 1.7; }
+
+  /* FOOTER */
+  .footer {
+    max-width: 1400px;
+    margin: 80px auto 0;
+    padding: 40px 48px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .footer-logo { font-weight: 900; font-size: 18px; letter-spacing: -0.02em; color: var(--dark); }
+  .footer-logo .sub { color: var(--gold); font-weight: 600; }
+  .footer-meta { font-size: 12px; color: var(--muted); letter-spacing: 0.05em; }
+
+  @media (max-width: 900px) {
+    .nav-links { display: none; }
+    .search-form { grid-template-columns: 1fr; }
+    .steps-grid { grid-template-columns: 1fr; }
+    .hero { padding: 60px 24px; }
+    .nav { padding: 16px 24px; }
+    .how-section { padding: 60px 24px; }
+  }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-left">
+    <div class="nav-logo">SEEK<span class="sub">.Audit</span></div>
+    <ul class="nav-links">
+      <li><a href="#hvordan">Hvordan det fungerer</a></li>
+    </ul>
+  </div>
+  <div class="nav-right">
+    <span class="nav-login" style="font-size:12px; background: var(--cream-2); padding: 6px 14px; border-radius: 100px; border: 1px solid var(--border);">Internt verktøy</span>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="social-proof">
+    <span class="dot"></span>
+    <span>Søk opp hvilken som helst norsk håndverkerbedrift</span>
+  </div>
+
+  <h1 class="hero-title">
+    Se hvor bedriften<br>
+    <span class="highlight">lekker penger</span>
+  </h1>
+
+  <p class="hero-subtitle">
+    Skriv inn bedriftsnavn eller organisasjonsnummer og få en komplett rapport om digital synlighet, kundereise og inntektslekkasje — <strong>på under 60 sekunder</strong>.
+  </p>
+
+  <div class="search-wrap">
+    <form class="search-form" onsubmit="handleSearch(event)" autocomplete="off">
+      <div class="search-input-wrap">
+        <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"/>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        <input
+          class="search-input"
+          id="searchInput"
+          type="text"
+          placeholder="Bedriftsnavn eller org.nr — f.eks. Rørleggerhuset AS"
+          autofocus
+        />
+      </div>
+      <button class="search-button" type="submit" id="searchBtn">
+        <span>Generer rapport</span>
+        <span class="arrow">→</span>
+      </button>
+    </form>
+
+    <div class="autocomplete" id="autocomplete"></div>
+  </div>
+
+  <div class="quick-examples">
+    <span class="quick-label">Prøv:</span>
+    <button class="quick-chip" onclick="velgEksempel('819595712')">Rørleggerhuset AS</button>
+    <button class="quick-chip" onclick="velgEksempel('Spyleteknikk AS')">Spyleteknikk AS</button>
+    <button class="quick-chip" onclick="velgEksempel('DZK Bygg AS')">DZK Bygg AS</button>
+    <button class="quick-chip" onclick="velgEksempel('Viken Tekniske AS')">Viken Tekniske AS</button>
+  </div>
+
+  <div class="trust-row">
+    <div class="avatars">
+      <div class="avatar avatar-1">H</div>
+      <div class="avatar avatar-2">M</div>
+      <div class="avatar avatar-3">K</div>
+    </div>
+    <div class="trust-text">Brukt på <strong>norske håndverkerbedrifter</strong> daglig</div>
+  </div>
+</section>
+
+<section class="how-section" id="hvordan">
+  <div class="section-label">Slik fungerer det</div>
+  <h2 class="section-title">Tre steg. Seksti sekunder<span class="dot">.</span></h2>
+  <div class="steps-grid">
+    <div class="step">
+      <div class="step-num">01</div>
+      <div class="step-title">Skriv inn bedrift</div>
+      <p class="step-desc">Søk opp bedriften ved navn eller organisasjonsnummer. Vi henter automatisk data fra Brønnøysund, Google Business Profile og nettsiden.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">02</div>
+      <div class="step-title">Vi analyserer</div>
+      <p class="step-desc">Rapporten ser på fire områder: synlighet, svartider, kundereise og oppfølging. Vi regner ut hva hver svakhet faktisk koster per år.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">03</div>
+      <div class="step-title">Få rapporten</div>
+      <p class="step-desc">Ferdig rapport med konkrete tall, kalkulator du kan justere live, og en ferdig åpningsreplikk til bruk på telefon.</p>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="footer-logo">SEEK<span class="sub">.Audit</span></div>
+  <div class="footer-meta">© 2026 SEEK AI AS — Kun for intern bruk</div>
+</footer>
+
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="loading-spinner"></div>
+  <div class="loading-tekst" id="loadingTekst">Henter Brreg-data...</div>
+  <div class="loading-sub">Dette tar vanligvis 15–30 sekunder</div>
+</div>
+
+<script>
+  const meldinger = [
+    'Henter Brreg-data...',
+    'Analyserer nettside...',
+    'Sjekker Google Business Profile...',
+    'Sjekker lastetid og mobilvennlighet...',
+    'Beregner SEEK-score...',
+    'Bygger rapport...',
+  ]
+  let meldingIdx = 0
+  let søkTimeout = null
+  let valgtOrgnr = null
+
+  const input = document.getElementById('searchInput')
+  const dropdown = document.getElementById('autocomplete')
+
+  input.addEventListener('input', () => {
+    valgtOrgnr = null
+    clearTimeout(søkTimeout)
+    const v = input.value.trim()
+    if (!v) { lukkDropdown(); return }
+
+    // Direkte org.nr — ikke søk
+    const rensOrgNr = v.replace(/\s/g, '')
+    if (/^\d{7,9}$/.test(rensOrgNr)) { lukkDropdown(); return }
+
+    if (v.length < 2) return
+    søkTimeout = setTimeout(() => søkBedrift(v), 300)
+  })
+
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.search-wrap')) lukkDropdown()
+  })
+
+  async function søkBedrift(q) {
+    try {
+      const res = await fetch(`/api/sok?q=${encodeURIComponent(q)}`)
+      const treff = await res.json()
+      if (!treff.length) { lukkDropdown(); return }
+      visDropdown(treff)
+    } catch { lukkDropdown() }
+  }
+
+  function visDropdown(treff) {
+    dropdown.innerHTML = treff.map(t => `
+      <div class="autocomplete-item" onclick="velgBedrift('${t.orgnr}', '${t.navn.replace(/'/g, "\\'")}')">
+        <div>
+          <div class="autocomplete-navn">${t.navn}</div>
+          <div class="autocomplete-meta">${t.poststed}${t.bransje ? ' · ' + t.bransje : ''}</div>
+        </div>
+        <div class="autocomplete-orgnr">${t.orgnr}</div>
+      </div>
+    `).join('')
+    dropdown.classList.add('open')
+  }
+
+  function lukkDropdown() {
+    dropdown.classList.remove('open')
+    dropdown.innerHTML = ''
+  }
+
+  function velgBedrift(orgnr, navn) {
+    valgtOrgnr = orgnr
+    input.value = navn
+    lukkDropdown()
+  }
+
+  function velgEksempel(verdi) {
+    input.value = verdi
+    valgtOrgnr = /^\d{9}$/.test(verdi) ? verdi : null
+    input.focus()
+  }
+
+  function handleSearch(e) {
+    e.preventDefault()
+    const v = input.value.trim()
+    if (!v) return
+
+    // Finn org.nr
+    let orgnr = valgtOrgnr
+    if (!orgnr) {
+      const rens = v.replace(/\s/g, '')
+      if (/^\d{9}$/.test(rens)) orgnr = rens
+    }
+
+    if (!orgnr) {
+      // Navn uten autocomplete-valg — prøv å søke og naviger til første treff
+      startLoading()
+      fetch(`/api/sok?q=${encodeURIComponent(v)}`)
+        .then(r => r.json())
+        .then(treff => {
+          if (treff.length) {
+            window.location.href = `/rapport/${treff[0].orgnr}`
+          } else {
+            stopLoading()
+            input.style.boxShadow = '0 0 0 3px rgba(200,136,30,0.3)'
+            input.placeholder = 'Fant ingen bedrift — prøv org.nr'
+          }
+        })
+        .catch(() => stopLoading())
+      return
+    }
+
+    startLoading()
+    window.location.href = `/rapport/${orgnr}`
+  }
+
+  function startLoading() {
+    document.getElementById('searchBtn').disabled = true
+    document.getElementById('loadingOverlay').classList.add('active')
+    meldingIdx = 0
+    setInterval(() => {
+      meldingIdx = (meldingIdx + 1) % meldinger.length
+      document.getElementById('loadingTekst').textContent = meldinger[meldingIdx]
+    }, 3000)
+  }
+
+  function stopLoading() {
+    document.getElementById('searchBtn').disabled = false
+    document.getElementById('loadingOverlay').classList.remove('active')
+  }
+</script>
+</body>
+</html>

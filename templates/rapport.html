@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Instrument+Serif:ital@0;1&family=Syne+Mono&display=swap" rel="stylesheet">
+<title>SEEK Audit — {{BEDRIFT_NAVN}}</title>
+<style>
+:root{
+  --s:#0d0d0b;--h:#fafaf7;--l:#f2f0ea;--m:#e8e5dc;--d:#8a8780;
+  --k:rgba(13,13,11,0.1);--ks:rgba(13,13,11,0.06);
+  --gold:#c49a1a;--gold-bg:#fdf6e0;--gold-t:#e8c050;
+  --red:#d4420e;--red-bg:#fdf0eb;--red-t:#f08060;
+  --green:#1a5c3a;--green-bg:#eaf4ef;--green-t:#7dcda0;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{font-family:'Syne',sans-serif;background:var(--h);color:var(--s);-webkit-font-smoothing:antialiased;font-size:15px;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+
+/* NAV */
+nav{position:sticky;top:0;z-index:100;background:rgba(250,250,247,.96);backdrop-filter:blur(14px);border-bottom:1px solid var(--k);padding:0 56px;display:flex;align-items:center;justify-content:space-between;height:50px;}
+.nav-logo{font-size:13px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;}
+.nav-logo span{color:var(--gold);}
+.nav-right{display:flex;align-items:center;gap:24px;}
+.nav-badge{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;background:var(--s);color:var(--h);padding:4px 10px;border-radius:20px;}
+.nav-score{font-family:'Syne Mono',monospace;font-size:13px;font-weight:700;color:var(--gold);}
+.nav-date{font-size:11px;color:var(--d);font-family:'Syne Mono',monospace;}
+
+/* HERO */
+.hero{background:var(--s);color:var(--h);padding:80px 80px 60px;position:relative;overflow:hidden;min-height:420px;display:flex;flex-direction:column;justify-content:flex-end;}
+.hero-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(250,250,247,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(250,250,247,.03) 1px,transparent 1px);background-size:52px 52px;}
+.hero-glow1{position:absolute;width:500px;height:500px;border-radius:50%;top:-160px;right:-60px;background:radial-gradient(circle,rgba(196,154,26,.16) 0%,transparent 65%);}
+.hero-glow2{position:absolute;width:300px;height:300px;border-radius:50%;bottom:-80px;left:180px;background:radial-gradient(circle,rgba(212,66,14,.12) 0%,transparent 65%);}
+.hero-tag{font-size:10px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--gold-t);margin-bottom:16px;position:relative;z-index:1;display:flex;align-items:center;gap:10px;}
+.hero-tag::before{content:'';display:block;width:28px;height:1px;background:var(--gold);}
+.hero h1{font-family:'Instrument Serif',serif;font-size:clamp(48px,7vw,88px);line-height:.95;font-weight:400;position:relative;z-index:1;margin-bottom:28px;}
+.hero h1 em{font-style:italic;color:rgba(250,250,247,.28);}
+.hero-bottom{display:flex;align-items:flex-end;justify-content:space-between;position:relative;z-index:1;border-top:1px solid rgba(250,250,247,.1);padding-top:24px;gap:32px;flex-wrap:wrap;}
+.hero-desc{font-size:14px;color:rgba(250,250,247,.45);line-height:1.7;max-width:480px;}
+.hero-score-block{display:flex;flex-direction:column;align-items:flex-end;flex-shrink:0;}
+.hero-score-num{font-family:'Syne Mono',monospace;font-size:72px;font-weight:700;color:var(--gold-t);line-height:1;}
+.hero-score-label{font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:rgba(250,250,247,.35);margin-top:4px;}
+.hero-score-status{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;background:rgba(196,154,26,.2);border:1px solid rgba(196,154,26,.35);color:var(--gold-t);padding:5px 12px;border-radius:20px;margin-top:8px;}
+
+/* SEKSJONER */
+.sek{padding:72px 80px;border-bottom:1px solid var(--k);}
+.sek.alt{background:var(--l);}
+.sek.dark{background:var(--s);color:var(--h);}
+.sek-tag{font-size:10px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--d);margin-bottom:12px;}
+.sek-tag.gold{color:var(--gold);}
+.sek-tag.red{color:var(--red);}
+.sek h2{font-family:'Instrument Serif',serif;font-size:clamp(32px,4vw,52px);font-weight:400;line-height:1.05;margin-bottom:36px;}
+.sek h2 em{font-style:italic;color:var(--d);}
+.sek.dark h2 em{color:rgba(250,250,247,.28);}
+.sek-lead{font-size:15px;color:var(--d);line-height:1.75;max-width:560px;margin-bottom:40px;}
+.sek.dark .sek-lead{color:rgba(250,250,247,.45);}
+
+/* KPI GRID */
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:2px;background:var(--k);border:1px solid var(--k);border-radius:14px;overflow:hidden;margin-bottom:40px;}
+.kpi-cell{background:var(--h);padding:24px 20px;}
+.sek.alt .kpi-cell{background:var(--l);}
+.kpi-tag{font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--d);margin-bottom:10px;}
+.kpi-val{font-family:'Instrument Serif',serif;font-size:36px;color:var(--s);line-height:1;margin-bottom:4px;}
+.kpi-val.gold{color:var(--gold);}
+.kpi-val.red{color:var(--red);}
+.kpi-unit{font-size:12px;color:var(--d);}
+
+/* SIGNAL CHIPS */
+.signal-section{margin-bottom:40px;}
+.signal-title{font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--d);margin-bottom:14px;}
+.chips{display:flex;flex-wrap:wrap;gap:8px;}
+.chip{display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:600;padding:6px 12px;border-radius:8px;letter-spacing:.02em;}
+.chip-ok{background:var(--green-bg);color:var(--green);border:1px solid rgba(26,92,58,.2);}
+.chip-bad{background:var(--red-bg);color:var(--red);border:1px solid rgba(212,66,14,.25);}
+.chip-warn{background:var(--gold-bg);color:#8a6a00;border:1px solid rgba(196,154,26,.3);}
+.chip-neutral{background:var(--m);color:var(--d);border:1px solid var(--k);}
+.chip-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+.chip-dot-ok{background:var(--green);}
+.chip-dot-bad{background:var(--red);}
+.chip-dot-warn{background:var(--gold);}
+.chip-dot-neutral{background:var(--d);}
+
+/* SCORE BARS */
+.score-areas{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:40px;}
+.score-area{background:white;border:1px solid var(--k);border-radius:12px;padding:20px 22px;}
+.sek.alt .score-area{background:var(--h);}
+.sa-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.sa-name{font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--s);}
+.sa-pct{font-family:'Syne Mono',monospace;font-size:22px;font-weight:700;color:var(--s);}
+.sa-bar{height:6px;background:var(--m);border-radius:3px;overflow:hidden;}
+.sa-fill{height:100%;border-radius:3px;}
+
+/* FINDINGS — dark cards */
+.findings{display:flex;flex-direction:column;gap:16px;}
+.finding-card{background:rgba(250,250,247,.05);border:1px solid rgba(250,250,247,.1);border-radius:14px;padding:28px 32px;position:relative;overflow:hidden;}
+.finding-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+.finding-card.pri-hoy::before{background:linear-gradient(90deg,var(--red),rgba(212,66,14,.3));}
+.finding-card.pri-middels::before{background:linear-gradient(90deg,var(--gold),rgba(196,154,26,.3));}
+.finding-meta{display:flex;align-items:center;gap:12px;margin-bottom:16px;}
+.finding-num{font-family:'Syne Mono',monospace;font-size:11px;color:rgba(250,250,247,.25);letter-spacing:.06em;}
+.finding-badge{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:3px 10px;border-radius:20px;}
+.finding-badge-hoy{background:rgba(212,66,14,.2);color:var(--red-t);border:1px solid rgba(212,66,14,.3);}
+.finding-badge-middels{background:rgba(196,154,26,.15);color:var(--gold-t);border:1px solid rgba(196,154,26,.3);}
+.finding-title{font-size:17px;font-weight:700;color:var(--h);line-height:1.3;margin-bottom:12px;}
+.finding-desc{font-size:13px;color:rgba(250,250,247,.55);line-height:1.7;max-width:640px;margin-bottom:18px;}
+.finding-desc strong{color:rgba(250,250,247,.85);font-weight:600;}
+.finding-table{width:100%;border-collapse:collapse;}
+.finding-table td{font-size:12px;padding:7px 0;vertical-align:top;border-bottom:1px solid rgba(250,250,247,.07);}
+.finding-table tr:last-child td{border-bottom:none;}
+.finding-table td:first-child{color:rgba(250,250,247,.35);}
+.finding-table td:last-child{text-align:right;color:rgba(250,250,247,.75);font-weight:600;font-family:'Syne Mono',monospace;}
+.finding-table tr.hl td{padding-top:12px;border-top:1px solid rgba(250,250,247,.12);border-bottom:none;}
+.finding-table tr.hl td:first-child{color:rgba(250,250,247,.55);font-size:12px;}
+.finding-table tr.hl td:last-child{color:var(--red-t);font-size:16px;font-family:'Instrument Serif',serif;}
+
+/* STYRKER */
+.styrker{display:flex;flex-direction:column;gap:0;}
+.styrke-rad{display:flex;align-items:center;gap:16px;padding:14px 0;border-bottom:1px solid var(--k);}
+.styrke-rad:last-child{border-bottom:none;}
+.styrke-ikon{width:28px;height:28px;border-radius:7px;background:var(--green-bg);border:1px solid rgba(26,92,58,.2);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.styrke-tekst{font-size:14px;font-weight:600;color:var(--s);}
+
+/* KALKULATOR */
+.calc-grid{display:grid;grid-template-columns:1fr 1fr;gap:28px 48px;margin-bottom:40px;}
+.slider-group{}
+.slider-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px;}
+.slider-name{font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:rgba(250,250,247,.35);}
+.slider-val{font-family:'Instrument Serif',serif;font-size:28px;color:var(--h);line-height:1;}
+.slider-unit{font-size:14px;color:rgba(250,250,247,.3);}
+input[type=range]{-webkit-appearance:none;width:100%;height:3px;background:rgba(250,250,247,.1);border-radius:2px;outline:none;}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:var(--gold);cursor:pointer;border:2px solid var(--s);box-shadow:0 0 0 1px var(--gold);}
+.calc-result{border-top:1px solid rgba(250,250,247,.1);padding-top:36px;display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:start;}
+.result-block .rl{font-size:10px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:rgba(250,250,247,.3);margin-bottom:10px;}
+.result-num{font-family:'Instrument Serif',serif;font-size:64px;color:var(--gold-t);line-height:1;margin-bottom:4px;}
+.result-sub{font-size:12px;color:rgba(250,250,247,.3);}
+.be-card{background:rgba(250,250,247,.04);border:1px solid rgba(250,250,247,.08);border-left:2px solid var(--gold);border-radius:0 10px 10px 0;padding:20px 22px;}
+.be-card .rl{font-size:10px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--gold-t);margin-bottom:10px;}
+.be-num{font-family:'Instrument Serif',serif;font-size:42px;color:var(--h);line-height:1;margin-bottom:8px;}
+.be-sub{font-size:12px;color:rgba(250,250,247,.35);line-height:1.6;}
+.be-sub strong{color:rgba(250,250,247,.7);}
+
+/* ANBEFALING */
+.anbefaling-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:28px;}
+.pakke-card{border-radius:12px;overflow:hidden;border:1px solid var(--k);}
+.pakke-head{padding:18px 22px;background:var(--s);display:flex;align-items:center;justify-content:space-between;}
+.pakke-name{font-size:14px;font-weight:700;color:var(--h);}
+.pakke-price{font-family:'Syne Mono',monospace;font-size:14px;color:var(--gold-t);}
+.pakke-body{padding:18px 22px;background:white;}
+.sek.alt .pakke-body{background:var(--h);}
+.pakke-row{display:flex;align-items:center;gap:8px;padding:5px 0;font-size:13px;color:var(--d);}
+.pakke-check{width:14px;height:14px;border-radius:3px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+
+/* ÅPNINGSREPLIKK */
+.replikk-block{background:var(--s);border-radius:14px;padding:32px 36px;margin-bottom:20px;position:relative;overflow:hidden;}
+.replikk-block::before{content:'';position:absolute;top:-60px;right:-60px;width:200px;height:200px;border-radius:50%;background:radial-gradient(circle,rgba(196,154,26,.1) 0%,transparent 70%);}
+.replikk-tag{font-size:10px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:rgba(250,250,247,.3);margin-bottom:14px;}
+.replikk-text{font-family:'Instrument Serif',serif;font-size:20px;color:var(--h);line-height:1.55;position:relative;z-index:1;}
+.replikk-note{font-size:11px;color:rgba(250,250,247,.25);margin-top:14px;font-family:'Syne Mono',monospace;letter-spacing:.04em;}
+
+/* FOOTER */
+footer{background:var(--s);padding:48px 80px;display:flex;align-items:center;justify-content:space-between;}
+.foot-logo{font-size:14px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--h);}
+.foot-logo span{color:var(--gold);}
+.foot-meta{font-size:11px;color:rgba(250,250,247,.3);font-family:'Syne Mono',monospace;letter-spacing:.04em;}
+
+@media print{
+  nav{display:none;}
+  .hero{min-height:300px;}
+  .sek{page-break-inside:avoid;}
+  input[type=range]{display:none;}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">SEEK<span>.</span> &nbsp;Audit</div>
+  <div class="nav-right">
+    <span class="nav-date">{{RAPPORT_DATO}}</span>
+    <span class="nav-score">{{SEEK_SCORE}} / 100</span>
+    <span class="nav-badge">{{SCORE_LABEL}}</span>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-grid"></div>
+  <div class="hero-glow1"></div>
+  <div class="hero-glow2"></div>
+  <div class="hero-tag">SEEK Audit · {{BRANSJE_NAVN}} · {{BY}}</div>
+  <h1>{{BEDRIFT_NAVN}}<br><em>salgsledd-rapport</em></h1>
+  <div class="hero-bottom">
+    <p class="hero-desc">Automatisk gjennomgang av digitalt salgsledd, synlighet og responsinfrastruktur. Basert på live-data fra nettside, Google og offentlige registre.</p>
+    <div class="hero-score-block">
+      <div class="hero-score-num">{{SEEK_SCORE}}</div>
+      <div class="hero-score-label">SEEK-score</div>
+      <div class="hero-score-status">{{SCORE_LABEL}}</div>
+    </div>
+  </div>
+</div>
+
+<!-- NØKKELTALL + SIGNALER -->
+<div class="sek">
+  <div class="sek-tag">01 — Bedriftsdata</div>
+  <h2>Det vi registrerte<br><em>om {{BEDRIFT_NAVN}}</em></h2>
+
+  <div class="kpi-row">
+    <div class="kpi-cell">
+      <div class="kpi-tag">Omsetning</div>
+      <div class="kpi-val">{{OMSETNING_FORMATERT}}</div>
+      <div class="kpi-unit">siste tilgjengelige år</div>
+    </div>
+    <div class="kpi-cell">
+      <div class="kpi-tag">Snittprosjekt</div>
+      <div class="kpi-val gold">{{SNITTPROSJEKT_KR_FORMATERT}}</div>
+      <div class="kpi-unit">kr per oppdrag (bransjeestimat)</div>
+    </div>
+    <div class="kpi-cell">
+      <div class="kpi-tag">Ansatte</div>
+      <div class="kpi-val">{{ANSATTE}}</div>
+      <div class="kpi-unit">registrert i Brreg</div>
+    </div>
+    <div class="kpi-cell">
+      <div class="kpi-tag">Estimert tap / år</div>
+      <div class="kpi-val red">{{LEKKASJE_TOTAL_FORMATERT}}</div>
+      <div class="kpi-unit">pga. svakheter i salgsleddet</div>
+    </div>
+  </div>
+
+  <!-- Signalchips — hva ble detektert -->
+  <div class="signal-section">
+    <div class="signal-title">Detekterte signaler — nettside</div>
+    <div class="chips" id="chips-nettside"></div>
+  </div>
+  <div class="signal-section">
+    <div class="signal-title">Synlighet og markedsføring</div>
+    <div class="chips" id="chips-synlighet"></div>
+  </div>
+
+  <!-- Score per område -->
+  <div class="score-areas">
+    <div class="score-area">
+      <div class="sa-head"><span class="sa-name">Respons-gap</span><span class="sa-pct" id="pct-rg">—</span></div>
+      <div class="sa-bar"><div class="sa-fill" id="fill-rg" style="background:var(--red);"></div></div>
+    </div>
+    <div class="score-area">
+      <div class="sa-head"><span class="sa-name">Kundereise</span><span class="sa-pct" id="pct-kj">—</span></div>
+      <div class="sa-bar"><div class="sa-fill" id="fill-kj" style="background:var(--gold);"></div></div>
+    </div>
+    <div class="score-area">
+      <div class="sa-head"><span class="sa-name">Oppfølging</span><span class="sa-pct" id="pct-op">—</span></div>
+      <div class="sa-bar"><div class="sa-fill" id="fill-op" style="background:var(--red);"></div></div>
+    </div>
+    <div class="score-area">
+      <div class="sa-head"><span class="sa-name">Synlighet</span><span class="sa-pct" id="pct-syn">—</span></div>
+      <div class="sa-bar"><div class="sa-fill" id="fill-syn" style="background:var(--gold);"></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- FINDINGS (mørk) -->
+<div class="sek dark">
+  <div class="sek-tag gold">02 — Funn</div>
+  <h2>Svakheter vi fant<br><em>i salgsleddet</em></h2>
+  <p class="sek-lead">Hver observasjon er basert på live-data fra nettside, Google Places og søkeresultater. Ingen estimater — kun det vi faktisk målte.</p>
+
+  <div class="findings">
+    {{FINDINGS_HTML}}
+    {{GMB_FINDING_HTML}}
+  </div>
+</div>
+
+<!-- STYRKER -->
+<div class="sek alt">
+  <div class="sek-tag">03 — Styrker</div>
+  <h2>Det som allerede<br><em>er på plass</em></h2>
+  <p class="sek-lead">Disse signalene ble detektert og er positive. Brukes til anerkjennelse tidlig i samtalen.</p>
+  <div class="styrker">
+    {{STYRKER_HTML}}
+  </div>
+</div>
+
+<!-- KALKULATOR (mørk) -->
+<div class="sek dark">
+  <div class="sek-tag gold">04 — ROI-kalkulator</div>
+  <h2>Hva ville det vært<br><em>verdt for dere?</em></h2>
+  <p class="sek-lead">Juster tallene hvis estimatene er feil. Beregningen oppdateres umiddelbart.</p>
+
+  <div class="calc-grid">
+    <div class="slider-group">
+      <div class="slider-head"><span class="slider-name">Snittprosjekt</span><span class="slider-val" id="v-snitt">0<span class="slider-unit"> kr</span></span></div>
+      <input type="range" id="s-snitt" min="50000" max="500000" step="10000" value="{{SNITTJOBB_KR}}">
+    </div>
+    <div class="slider-group">
+      <div class="slider-head"><span class="slider-name">Ansatte</span><span class="slider-val" id="v-ans">0</span></div>
+      <input type="range" id="s-ans" min="1" max="100" step="1" value="{{ANSATTE_RAW}}">
+    </div>
+    <div class="slider-group">
+      <div class="slider-head"><span class="slider-name">Henvendelser / uke</span><span class="slider-val" id="v-hen">0</span></div>
+      <input type="range" id="s-hen" min="5" max="150" step="1" value="{{HENVENDELSER_ESTIMERT}}">
+    </div>
+    <div class="slider-group">
+      <div class="slider-head"><span class="slider-name">Margin</span><span class="slider-val" id="v-marg">0<span class="slider-unit"> %</span></span></div>
+      <input type="range" id="s-marg" min="10" max="50" step="1" value="{{MARGIN_PCT}}">
+    </div>
+  </div>
+
+  <div class="calc-result">
+    <div class="result-block">
+      <div class="rl">Ekstra verdi per måned</div>
+      <div class="result-num" id="v-total">0</div>
+      <div class="result-sub" id="v-aar">beregner...</div>
+    </div>
+    <div class="be-card">
+      <div class="rl">Break-even SEEK</div>
+      <div class="be-num" id="v-be">0</div>
+      <div class="be-sub">ekstra prosjekter per måned for å dekke <strong>hele SEEK-kostnaden ({{ANBEFALT_PAKKE_PRIS}} kr/mnd)</strong></div>
+    </div>
+  </div>
+</div>
+
+<!-- ANBEFALING -->
+<div class="sek">
+  <div class="sek-tag">05 — Anbefaling</div>
+  <h2>SEEK {{ANBEFALT_PAKKE}}<br><em>— hva det betyr</em></h2>
+  <p class="sek-lead">Basert på bedriftens størrelse og de svakhetene vi identifiserte, er dette anbefalingen for {{BEDRIFT_NAVN}}.</p>
+
+  <div class="anbefaling-grid">
+    <div class="pakke-card">
+      <div class="pakke-head">
+        <span class="pakke-name">SEEK {{ANBEFALT_PAKKE}}</span>
+        <span class="pakke-price">{{ANBEFALT_PAKKE_PRIS}} kr/mnd</span>
+      </div>
+      <div class="pakke-body">
+        <div class="pakke-row"><div class="pakke-check" style="background:var(--green-bg);"><svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>Automatisk svar innen 30 sek</div>
+        <div class="pakke-row"><div class="pakke-check" style="background:var(--green-bg);"><svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>Filtrering og kvalifisering av leads</div>
+        <div class="pakke-row"><div class="pakke-check" style="background:var(--green-bg);"><svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>Booking direkte i kalender</div>
+        <div class="pakke-row"><div class="pakke-check" style="background:var(--green-bg);"><svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>Oppfølgingssekvens 3 uker etter tilbud</div>
+      </div>
+    </div>
+    <div class="pakke-card">
+      <div class="pakke-head">
+        <span class="pakke-name">Break-even</span>
+        <span class="pakke-price">{{BREAK_EVEN_JOBBER}} jobb(er)/mnd</span>
+      </div>
+      <div class="pakke-body">
+        <div class="pakke-row" style="flex-direction:column;align-items:flex-start;gap:6px;padding:8px 0;">
+          <span style="font-size:13px;color:var(--d);line-height:1.6;">Én ekstra jobb per måned dekker hele tjenesten. Med {{ANSATTE}} ansatte og snittprosjekt {{SNITTPROSJEKT_KR_FORMATERT}} er dette realistisk å hente fra de tapte henvendelsene alene.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="replikk-block">
+    <div class="replikk-tag">Åpningsreplikk for samtalen</div>
+    <div class="replikk-text">«{{AAPNINGSREPLIKK}}»</div>
+    <div class="replikk-note">SEEK · Kun for intern bruk · {{RAPPORT_DATO}}</div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="foot-logo">SEEK<span>.</span></div>
+  <div class="foot-meta">Org.nr {{ORGNR_FORMATERT}} · {{BY}} · Rapport generert {{RAPPORT_DATO}}</div>
+</footer>
+
+<script>
+// Score data injected
+const scoreData = {
+  rg: 0, kj: 0, op: 0, syn: 0,
+  hasSSL: false, hasChatbot: false, chatbotType: null,
+  hasBooking: false, bookingType: null, hasForm: false, formFields: 0,
+  hasPhone: false, hasCTA: false, ctaText: null,
+  hasMetaPixel: false, hasGoogleAds: false, hasGA: false, hasCRM: false, crmType: null,
+  hasNewsletter: false, hasAutoResp: false, hasGratisBefaring: false,
+  gmbFound: false, gmbRating: null, gmbReviews: null,
+  orgRankBransje: null, orgRankBransjeAkutt: null,
+  soekBransjeBy: null, soekBransjeByAkutt: null
+};
+
+// These will be replaced by render.ts
+// SCORE_DATA_PLACEHOLDER
+
+// Build chips
+function buildChips() {
+  const nettsideChips = [];
+  const synlighetsChips = [];
+
+  // Nettside-chips
+  nettsideChips.push({ ok: scoreData.hasSSL, label: 'SSL / HTTPS' });
+  if (scoreData.hasChatbot) nettsideChips.push({ ok: true, label: 'Chatbot: ' + (scoreData.chatbotType || 'detektert') });
+  else nettsideChips.push({ ok: false, label: 'Ingen chatbot' });
+  if (scoreData.hasBooking) nettsideChips.push({ ok: true, label: 'Booking: ' + (scoreData.bookingType || 'detektert') });
+  else nettsideChips.push({ ok: false, label: 'Ingen booking-kalender' });
+  if (scoreData.hasForm) nettsideChips.push({ ok: 'warn', label: 'Kontaktskjema (' + scoreData.formFields + ' felt)' });
+  else nettsideChips.push({ ok: false, label: 'Ingen kontaktskjema detektert' });
+  nettsideChips.push({ ok: scoreData.hasPhone, label: 'Klikkbart telefonnummer' });
+  nettsideChips.push({ ok: scoreData.hasAutoResp, label: 'Automatisk bekreftelse' });
+  if (scoreData.hasGratisBefaring) nettsideChips.push({ ok: 'warn', label: '"Gratis befaring" uten filter' });
+  if (scoreData.ctaText) nettsideChips.push({ ok: scoreData.hasCTA, label: 'CTA: "' + scoreData.ctaText + '"' });
+
+  // Synlighet-chips
+  if (scoreData.gmbFound) nettsideChips.push({ ok: true, label: 'GMB: ' + (scoreData.gmbRating ? scoreData.gmbRating + '★ (' + scoreData.gmbReviews + ' anm.)' : 'funnet') });
+  else synlighetsChips.push({ ok: false, label: 'Google Business Profile mangler' });
+  nettsideChips.push({ ok: scoreData.hasMetaPixel, label: 'Meta Pixel' });
+  nettsideChips.push({ ok: scoreData.hasGoogleAds, label: 'Google Ads-tag' });
+  nettsideChips.push({ ok: scoreData.hasGA, label: 'Google Analytics' });
+  if (scoreData.hasCRM) synlighetsChips.push({ ok: true, label: 'CRM: ' + (scoreData.crmType || 'detektert') });
+  else synlighetsChips.push({ ok: false, label: 'Ingen CRM-spor' });
+  nettsideChips.push({ ok: scoreData.hasNewsletter, label: 'Nyhetsbrev' });
+
+  if (scoreData.orgRankBransje) synlighetsChips.push({ ok: scoreData.orgRankBransje <= 3, warn: scoreData.orgRankBransje <= 6, label: '"' + (scoreData.soekBransjeBy || '') + '" #' + scoreData.orgRankBransje });
+  else if (scoreData.soekBransjeBy) synlighetsChips.push({ ok: false, label: '"' + scoreData.soekBransjeBy + '" — ikke i topp 10' });
+
+  function chipHtml(c) {
+    if (c.ok === true) return `<span class="chip chip-ok"><span class="chip-dot chip-dot-ok"></span>${c.label}</span>`;
+    if (c.ok === false) return `<span class="chip chip-bad"><span class="chip-dot chip-dot-bad"></span>${c.label}</span>`;
+    if (c.ok === 'warn') return `<span class="chip chip-warn"><span class="chip-dot chip-dot-warn"></span>${c.label}</span>`;
+    return `<span class="chip chip-neutral"><span class="chip-dot chip-dot-neutral"></span>${c.label}</span>`;
+  }
+
+  document.getElementById('chips-nettside').innerHTML = nettsideChips.map(chipHtml).join('');
+  document.getElementById('chips-synlighet').innerHTML = synlighetsChips.length > 0 ? synlighetsChips.map(chipHtml).join('') : '<span class="chip chip-neutral"><span class="chip-dot chip-dot-neutral"></span>Ingen rangeringsdata</span>';
+}
+
+function buildScoreBars() {
+  const areas = [
+    { id: 'rg', pct: scoreData.rg, color: scoreData.rg > 60 ? 'var(--red)' : 'var(--gold)' },
+    { id: 'kj', pct: scoreData.kj, color: scoreData.kj > 60 ? 'var(--red)' : 'var(--gold)' },
+    { id: 'op', pct: scoreData.op, color: scoreData.op > 60 ? 'var(--red)' : 'var(--gold)' },
+    { id: 'syn', pct: scoreData.syn, color: scoreData.syn > 60 ? 'var(--red)' : 'var(--gold)' },
+  ];
+  areas.forEach(a => {
+    const pctEl = document.getElementById('pct-' + a.id);
+    const fillEl = document.getElementById('fill-' + a.id);
+    if (pctEl) pctEl.textContent = a.pct + ' %';
+    if (fillEl) { fillEl.style.width = a.pct + '%'; fillEl.style.background = a.color; }
+  });
+}
+
+// ROI calculator
+function fmt(n) { return Math.round(n).toLocaleString('nb-NO'); }
+function calc() {
+  const snitt = parseInt(document.getElementById('s-snitt').value);
+  const ans = parseInt(document.getElementById('s-ans').value);
+  const hen = parseInt(document.getElementById('s-hen').value);
+  const marg = parseInt(document.getElementById('s-marg').value) / 100;
+  const uker = 4.3;
+  const ledd1 = hen * 0.15 * snitt * marg * uker;
+  const ledd2 = ans * 1.2 * 2 * 650 * uker;
+  const ledd3 = hen * 0.08 * snitt * marg * uker;
+  const totalMnd = ledd1 + ledd2 + ledd3;
+  const totalAar = totalMnd * 12;
+  const seekKost = {{ANBEFALT_PAKKE_PRIS_RAW}};
+  const be = seekKost / (snitt * marg);
+
+  document.getElementById('v-snitt').innerHTML = fmt(snitt) + '<span class="slider-unit"> kr</span>';
+  document.getElementById('v-ans').textContent = ans;
+  document.getElementById('v-hen').textContent = hen;
+  document.getElementById('v-marg').innerHTML = Math.round(marg*100) + '<span class="slider-unit"> %</span>';
+  document.getElementById('v-total').textContent = fmt(totalMnd);
+  document.getElementById('v-aar').textContent = 'ca. ' + (totalAar/1000000).toFixed(1).replace('.',',') + ' millioner per år';
+  document.getElementById('v-be').textContent = be.toFixed(1).replace('.',',');
+}
+['s-snitt','s-ans','s-hen','s-marg'].forEach(id => document.getElementById(id).addEventListener('input', calc));
+
+buildChips();
+buildScoreBars();
+calc();
+</script>
+</body>
+</html>

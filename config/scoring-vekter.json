@@ -1,0 +1,69 @@
+{
+  "omrade_vekter": {
+    "respons_gap": 35,
+    "kundereise": 25,
+    "oppfolging": 20,
+    "synlighet": 20
+  },
+
+  "score_terskler": {
+    "het_lead": 70,
+    "varm_lead": 40,
+    "lav_match": 20
+  },
+
+  "synlighet": {
+    "gmb_finnes_ikke": 20,
+    "gmb_under_5_anmeldelser": 10,
+    "gmb_under_20_anmeldelser": 5,
+    "gmb_rating_under_4": 5,
+    "ikke_synlig_topp_10": 10,
+    "topp_4_10": 5,
+    "ingen_google_ads": 10,
+    "ingen_meta_ads": 5,
+    "nettside_ikke_ssl": 5,
+    "lastetid_over_4s": 5,
+    "lastetid_over_2_5s": 3,
+    "ikke_mobilvennlig": 10
+  },
+
+  "respons_gap": {
+    "ingen_chatbot": 25,
+    "ingen_auto_respons": 25,
+    "ingen_booking_kalender": 15,
+    "ingen_24_7_vakt": 10,
+    "apningstider_ikke_oppgitt": 5
+  },
+
+  "kundereise": {
+    "gratis_befaring_uten_filter": 20,
+    "skjema_under_3_felter": 15,
+    "ingen_kvalifiseringssporsmal": 15,
+    "telefon_ikke_klikkbart_mobil": 5,
+    "utydelig_cta": 10,
+    "mer_enn_3_klikk_til_skjema": 10
+  },
+
+  "oppfolging": {
+    "ingen_crm_spor": 20,
+    "ingen_email_automasjon": 15,
+    "ingen_retargeting_pixel": 15,
+    "ingen_nyhetsbrev": 10
+  },
+
+  "eksklusjon_kriterier": {
+    "snittjobb_under_kr": 20000,
+    "enmannsforetak_uten_vekst": true,
+    "full_automasjon_allerede": true,
+    "ingen_nettside": false
+  },
+
+  "bonus_signaler": {
+    "kommentar": "Signaler som reduserer score (bedriften har allerede løst noe)",
+    "har_chatbot": -20,
+    "har_booking_kalender": -15,
+    "har_crm_spor": -15,
+    "har_aktive_ads": -10,
+    "har_24_7_vakt": -8
+  }
+}
