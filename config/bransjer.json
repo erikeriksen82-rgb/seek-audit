@@ -4,6 +4,14 @@
     "nace_koder": ["43.221", "43.22"],
     "prioritet": "hoy",
     "primaer_svikt": "respons_gap",
+    "soekeord": [
+      { "ord": "rørlegger [by]", "intent": "transaksjon", "prioritet": "hoy" },
+      { "ord": "rørlegger akutt [by]", "intent": "transaksjon", "prioritet": "hoy" },
+      { "ord": "vannlekkasje [by]", "intent": "akutt", "prioritet": "hoy" },
+      { "ord": "rørlegger pris [by]", "intent": "kommersiell", "prioritet": "middels" },
+      { "ord": "bytte varmtvannsbereder [by]", "intent": "transaksjon", "prioritet": "middels" },
+      { "ord": "baderom rørlegger [by]", "intent": "transaksjon", "prioritet": "middels" }
+    ],
     "parametre": {
       "snittjobb_kr": 35000,
       "snittjobb_prosjekt_kr": 250000,
@@ -24,6 +32,13 @@
     "nace_koder": ["43.210"],
     "prioritet": "hoy",
     "primaer_svikt": "ressurslekkasje",
+    "soekeord": [
+      { "ord": "elektriker [by]", "intent": "transaksjon", "prioritet": "hoy" },
+      { "ord": "elektriker akutt [by]", "intent": "akutt", "prioritet": "hoy" },
+      { "ord": "elektriker sikringsskap [by]", "intent": "transaksjon", "prioritet": "middels" },
+      { "ord": "el-sjekk bolig [by]", "intent": "kommersiell", "prioritet": "middels" },
+      { "ord": "elektriker pris time [by]", "intent": "kommersiell", "prioritet": "middels" }
+    ],
     "parametre": {
       "snittjobb_kr": 28000,
       "snittjobb_prosjekt_kr": 180000,
@@ -44,6 +59,13 @@
     "nace_koder": ["43.32", "43.320", "43.39"],
     "prioritet": "hoy",
     "primaer_svikt": "ressurslekkasje",
+    "soekeord": [
+      { "ord": "tømrer [by]", "intent": "transaksjon", "prioritet": "hoy" },
+      { "ord": "snekker [by]", "intent": "transaksjon", "prioritet": "hoy" },
+      { "ord": "loftutbygging [by]", "intent": "transaksjon", "prioritet": "middels" },
+      { "ord": "terrasse bygge [by]", "intent": "transaksjon", "prioritet": "middels" },
+      { "ord": "tømrer pris [by]", "intent": "kommersiell", "prioritet": "middels" }
+    ],
     "parametre": {
       "snittjobb_kr": 45000,
       "snittjobb_prosjekt_kr": 320000,

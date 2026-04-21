@@ -94,6 +94,7 @@ function ingenNettside(): WebsiteData {
     hasClearCTA: false, ctaText: null, hasMetaPixel: false, hasGoogleAdsTag: false,
     hasGoogleAnalytics: false, hasCRMTracking: false, crmType: null,
     hasNewsletterSignup: false, hasAutoResponse: false, hasGratisBefaringUtenFilter: false,
+    metaTitle: null, metaDescription: null, hasH1: false, h1Text: null, hasStructuredData: false,
     error: 'Ingen nettside registrert i Brreg',
   }
 }

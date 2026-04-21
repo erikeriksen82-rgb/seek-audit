@@ -38,6 +38,12 @@ export interface WebsiteData {
   hasNewsletterSignup: boolean
   hasAutoResponse: boolean
   hasGratisBefaringUtenFilter: boolean
+  // SEO-signaler
+  metaTitle: string | null
+  metaDescription: string | null
+  hasH1: boolean
+  h1Text: string | null
+  hasStructuredData: boolean
   error: string | null
 }
 
@@ -61,11 +67,20 @@ export interface GmbData {
   error: string | null
 }
 
+export interface Konkurrent {
+  tittel: string
+  url: string
+  posisjon: number
+}
+
 export interface OrgRankData {
   rankBransjeBy: number | null
   rankBransjeByAkutt: number | null
   soekBransjeBy: string | null
   soekBransjeByAkutt: string | null
+  toppKonkurrenter: Konkurrent[]
+  annonsoerer: string[]        // domener som kjører Google Ads på søket
+  harAnnonsering: boolean      // noen kjører ads på dette søkordet
   error: string | null
 }
 

@@ -259,8 +259,49 @@ footer{background:var(--s);padding:48px 80px;display:flex;align-items:center;jus
   </div>
 </div>
 
+<!-- SEO + KONKURRENTER -->
+<div class="sek alt" id="seo">
+  <div class="sek-tag">02 — SEO, annonser og konkurrenter</div>
+  <h2>Slik ser det ut<br><em>i søk akkurat nå</em></h2>
+  <p class="sek-lead">Hva en potensiell kunde faktisk møter når de søker etter {{BRANSJE_NAVN}} i {{BY}}.</p>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:32px;">
+
+    <!-- Organisk rangering -->
+    <div style="background:white;border:1px solid var(--k);border-radius:12px;overflow:hidden;">
+      <div style="padding:16px 20px;background:var(--s);display:flex;align-items:center;justify-content:space-between;">
+        <span style="font-size:12px;font-weight:700;color:var(--h);letter-spacing:.08em;text-transform:uppercase;">Organisk rangering</span>
+        <span style="font-family:'Syne Mono',monospace;font-size:11px;color:rgba(250,250,247,.4);">Google · {{BY}}</span>
+      </div>
+      {{RANGERING_HTML}}
+    </div>
+
+    <!-- Annonsører -->
+    <div style="background:white;border:1px solid var(--k);border-radius:12px;overflow:hidden;">
+      <div style="padding:16px 20px;background:var(--s);display:flex;align-items:center;justify-content:space-between;">
+        <span style="font-size:12px;font-weight:700;color:var(--h);letter-spacing:.08em;text-transform:uppercase;">Google Ads — aktive</span>
+        <span style="font-family:'Syne Mono',monospace;font-size:11px;color:rgba(250,250,247,.4);">Betalt søk</span>
+      </div>
+      {{ANNONSER_HTML}}
+    </div>
+
+  </div>
+
+  <!-- SEO-signaler -->
+  <div style="background:white;border:1px solid var(--k);border-radius:12px;padding:24px;margin-bottom:32px;">
+    <div style="font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--d);margin-bottom:16px;">SEO-signaler på nettside</div>
+    {{SEO_SIGNALER_HTML}}
+  </div>
+
+  <!-- Søkeordforslag -->
+  <div style="background:var(--s);border-radius:14px;padding:28px 32px;">
+    <div style="font-size:10px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:rgba(250,250,247,.3);margin-bottom:16px;">Anbefalte søkeord å eie i {{BY}}</div>
+    {{SOEKEORD_HTML}}
+  </div>
+</div>
+
 <!-- FINDINGS (mørk) -->
-<div class="sek dark">
+<div class="sek dark" id="funn">
   <div class="sek-tag gold">02 — Funn</div>
   <h2>Svakheter vi fant<br><em>i salgsleddet</em></h2>
   <p class="sek-lead">Hver observasjon er basert på live-data fra nettside, Google Places og søkeresultater. Ingen estimater — kun det vi faktisk målte.</p>

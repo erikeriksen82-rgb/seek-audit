@@ -136,6 +136,15 @@ export async function skrapNettside(url: string): Promise<WebsiteData> {
       const harFilter = hasQualificationFields || hasBookingCalendar
       const hasGratisBefaringUtenFilter = harGratisBefaring && !harFilter
 
+      // SEO-signaler
+      const metaTitle = (document.querySelector('title')?.textContent || '').trim() || null
+      const metaDescEl = document.querySelector('meta[name="description"]') as HTMLMetaElement | null
+      const metaDescription = metaDescEl?.content?.trim() || null
+      const h1El = document.querySelector('h1')
+      const hasH1 = !!h1El
+      const h1Text = h1El?.textContent?.trim() || null
+      const hasStructuredData = !!document.querySelector('script[type="application/ld+json"]')
+
       // Nyhetsbrev
       const hasNewsletterSignup =
         html.includes('nyhetsbrev') ||
@@ -169,6 +178,11 @@ export async function skrapNettside(url: string): Promise<WebsiteData> {
         hasGratisBefaringUtenFilter,
         hasNewsletterSignup,
         hasAutoResponse,
+        metaTitle,
+        metaDescription,
+        hasH1,
+        h1Text,
+        hasStructuredData,
       }
     }, networkUrlsStr)
 
@@ -193,26 +207,13 @@ export async function skrapNettside(url: string): Promise<WebsiteData> {
 
 function tomWebsiteData(url: string | null, error: string): WebsiteData {
   return {
-    url,
-    hasSSL: false,
-    hasChatbot: false,
-    chatbotType: null,
-    hasBookingCalendar: false,
-    bookingType: null,
-    hasContactForm: false,
-    formFieldCount: 0,
-    hasQualificationFields: false,
-    hasClickablePhone: false,
-    hasClearCTA: false,
-    ctaText: null,
-    hasMetaPixel: false,
-    hasGoogleAdsTag: false,
-    hasGoogleAnalytics: false,
-    hasCRMTracking: false,
-    crmType: null,
-    hasNewsletterSignup: false,
-    hasAutoResponse: false,
-    hasGratisBefaringUtenFilter: false,
+    url, hasSSL: false, hasChatbot: false, chatbotType: null,
+    hasBookingCalendar: false, bookingType: null, hasContactForm: false,
+    formFieldCount: 0, hasQualificationFields: false, hasClickablePhone: false,
+    hasClearCTA: false, ctaText: null, hasMetaPixel: false, hasGoogleAdsTag: false,
+    hasGoogleAnalytics: false, hasCRMTracking: false, crmType: null,
+    hasNewsletterSignup: false, hasAutoResponse: false, hasGratisBefaringUtenFilter: false,
+    metaTitle: null, metaDescription: null, hasH1: false, h1Text: null, hasStructuredData: false,
     error,
   }
 }

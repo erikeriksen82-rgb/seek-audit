@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { OrgRankData } from '../types'
+import { OrgRankData, Konkurrent } from '../types'
 import { cacheGet, cacheSet } from './cache'
 
 export async function hentOrganiskRangering(
@@ -9,7 +9,7 @@ export async function hentOrganiskRangering(
   serpApiKey: string
 ): Promise<OrgRankData> {
   if (!poststed) {
-    return { rankBransjeBy: null, rankBransjeByAkutt: null, soekBransjeBy: null, soekBransjeByAkutt: null, error: 'Ingen poststed' }
+    return { rankBransjeBy: null, rankBransjeByAkutt: null, soekBransjeBy: null, soekBransjeByAkutt: null, toppKonkurrenter: [], annonsoerer: [], harAnnonsering: false, error: 'Ingen poststed' }
   }
 
   const soek1 = `${bransje} ${poststed}`
@@ -20,15 +20,41 @@ export async function hentOrganiskRangering(
 
   try {
     const [res1, res2] = await Promise.all([
-      søkSerpApi(soek1, bedriftNavn, serpApiKey),
-      søkSerpApi(soek2, bedriftNavn, serpApiKey),
+      søkSerpApi(soek1, serpApiKey),
+      søkSerpApi(soek2, serpApiKey),
     ])
 
+    const navnLower = bedriftNavn.toLowerCase()
+
+    // Finn selskapets plassering
+    const rankBransjeBy = finnRangering(res1.organiske, navnLower)
+    const rankBransjeByAkutt = finnRangering(res2.organiske, navnLower)
+
+    // Topp 3 konkurrenter (ekskluder selskapet selv og katalogsider)
+    const toppKonkurrenter: Konkurrent[] = res1.organiske
+      .filter(r => !r.link.includes(navnLower.replace(/\s+/g, '')) && !erKatalog(r.link))
+      .slice(0, 3)
+      .map((r, i) => ({
+        tittel: r.title,
+        url: kortDomene(r.link),
+        posisjon: r.posisjon,
+      }))
+
+    // Annonsører fra begge søk
+    const alleAnnonsorer = [...res1.ads, ...res2.ads]
+      .map(a => kortDomene(a.link || a.displayed_link || ''))
+      .filter(Boolean)
+      .filter(d => !d.includes(navnLower.replace(/\s+/g, '')))
+    const unike = [...new Set(alleAnnonsorer)].slice(0, 4)
+
     const result: OrgRankData = {
-      rankBransjeBy: res1,
-      rankBransjeByAkutt: res2,
+      rankBransjeBy,
+      rankBransjeByAkutt,
       soekBransjeBy: soek1,
       soekBransjeByAkutt: soek2,
+      toppKonkurrenter,
+      annonsoerer: unike,
+      harAnnonsering: alleAnnonsorer.length > 0,
       error: null,
     }
 
@@ -36,32 +62,38 @@ export async function hentOrganiskRangering(
     return result
   } catch (err: any) {
     console.error('SerpAPI feil:', err.message)
-    return { rankBransjeBy: null, rankBransjeByAkutt: null, soekBransjeBy: soek1, soekBransjeByAkutt: soek2, error: err.message }
+    return { rankBransjeBy: null, rankBransjeByAkutt: null, soekBransjeBy: soek1, soekBransjeByAkutt: soek2, toppKonkurrenter: [], annonsoerer: [], harAnnonsering: false, error: err.message }
   }
 }
 
-async function søkSerpApi(query: string, bedriftNavn: string, apiKey: string): Promise<number | null> {
+async function søkSerpApi(query: string, apiKey: string): Promise<{ organiske: any[], ads: any[] }> {
   const res = await axios.get('https://serpapi.com/search', {
-    params: {
-      q: query,
-      gl: 'no',
-      hl: 'no',
-      num: 10,
-      api_key: apiKey,
-    },
+    params: { q: query, gl: 'no', hl: 'no', num: 10, api_key: apiKey },
     timeout: 8000,
   })
+  return {
+    organiske: (res.data?.organic_results ?? []).map((r: any, i: number) => ({ ...r, posisjon: i + 1 })),
+    ads: res.data?.ads ?? [],
+  }
+}
 
-  const organiske = res.data?.organic_results ?? []
-  const navnLower = bedriftNavn.toLowerCase()
-
-  for (let i = 0; i < organiske.length; i++) {
-    const tittel = (organiske[i].title ?? '').toLowerCase()
-    const link = (organiske[i].link ?? '').toLowerCase()
+function finnRangering(organiske: any[], navnLower: string): number | null {
+  for (const r of organiske) {
+    const tittel = (r.title ?? '').toLowerCase()
+    const link = (r.link ?? '').toLowerCase()
     if (tittel.includes(navnLower) || link.includes(navnLower.replace(/\s+/g, ''))) {
-      return i + 1
+      return r.posisjon
     }
   }
-
   return null
+}
+
+function kortDomene(url: string): string {
+  try { return new URL(url.startsWith('http') ? url : `https://${url}`).hostname.replace(/^www\./, '') }
+  catch { return url.replace(/^www\./, '').split('/')[0] }
+}
+
+function erKatalog(url: string): boolean {
+  const kataloger = ['1881', 'gulesider', 'finn.no', 'bygg', 'mittanbud', 'prisjakt', 'google.com', 'facebook.com']
+  return kataloger.some(k => url.includes(k))
 }

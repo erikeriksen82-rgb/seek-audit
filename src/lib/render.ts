@@ -168,6 +168,27 @@ function genererFinding(flagg: string, data: AuditResult): FindingInfo | null {
   }
 }
 
+function radStyle(ok: boolean | 'warn'): string {
+  if (ok === true) return `background:var(--green-bg);color:var(--green);`
+  if (ok === 'warn') return `background:var(--gold-bg);color:#8a6a00;`
+  return `background:var(--red-bg);color:var(--red);`
+}
+
+function seoRad(label: string, verdi: string | null, ok: boolean | 'warn'): string {
+  const farger = ok === true ? 'var(--green-bg);color:var(--green)' : ok === 'warn' ? 'var(--gold-bg);color:#8a6a00' : 'var(--red-bg);color:var(--red)'
+  return `
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--k);gap:16px;">
+    <span style="font-size:13px;color:var(--d);flex-shrink:0;">${label}</span>
+    <span style="font-size:12px;font-weight:600;text-align:right;background:${fargen(ok)};padding:2px 8px;border-radius:6px;max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${verdi || '—'}</span>
+  </div>`
+}
+
+function fargen(ok: boolean | 'warn'): string {
+  if (ok === true) return 'var(--green-bg);color:var(--green)'
+  if (ok === 'warn') return 'var(--gold-bg);color:#8a6a00'
+  return 'var(--red-bg);color:var(--red)'
+}
+
 export function renderRapport(data: AuditResult): string {
   const template = fs.readFileSync(path.join(process.cwd(), 'templates', 'rapport.html'), 'utf-8')
   const b = data.brreg
@@ -293,6 +314,105 @@ export function renderRapport(data: AuditResult): string {
     }
   }
 
+  // ── SEO + KONKURRENTER ──────────────────────────────────────
+
+  const by = b?.forretningsadresse?.poststed || ''
+  const r = data.orgRank
+
+  // Organisk rangering
+  const rangeringHtml = (() => {
+    if (!r) return `<div style="padding:16px 20px;font-size:13px;color:var(--d);">Ingen søkedata tilgjengelig</div>`
+    const bedriftRad = (soek: string | null, rang: number | null) => {
+      if (!soek) return ''
+      const etikettStyle = rang
+        ? (rang <= 3 ? `background:var(--green-bg);color:var(--green)` : `background:var(--gold-bg);color:#8a6a00`)
+        : `background:var(--red-bg);color:var(--red)`
+      const rangTekst = rang ? `#${rang}` : 'Ikke i topp 10'
+      return `<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 20px;border-bottom:1px solid var(--k);font-size:13px;">
+        <span style="color:var(--s);font-weight:500;">«${soek}»</span>
+        <span style="font-family:'Syne Mono',monospace;font-size:12px;font-weight:700;padding:2px 10px;border-radius:20px;${etikettStyle}">${rangTekst}</span>
+      </div>`
+    }
+    const konkurRader = r.toppKonkurrenter.length > 0
+      ? r.toppKonkurrenter.map(k => `<div style="display:flex;align-items:center;justify-content:space-between;padding:9px 20px;border-bottom:1px solid var(--ks);font-size:12px;">
+          <span style="color:var(--d);">#${k.posisjon} ${k.url}</span>
+          <span style="font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;background:var(--m);color:var(--d);padding:2px 8px;border-radius:20px;">konkurrent</span>
+        </div>`).join('')
+      : `<div style="padding:10px 20px;font-size:12px;color:var(--d);">Ingen konkurrentdata</div>`
+    return bedriftRad(r.soekBransjeBy, r.rankBransjeBy)
+      + bedriftRad(r.soekBransjeByAkutt, r.rankBransjeByAkutt)
+      + (r.toppKonkurrenter.length > 0 ? `<div style="padding:8px 20px 4px;font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--d);">Topp konkurrenter</div>` : '')
+      + konkurRader
+  })()
+
+  // Annonsører
+  const annonserHtml = (() => {
+    if (!r) return `<div style="padding:16px 20px;font-size:13px;color:var(--d);">Ingen annonsedata</div>`
+    const bedriftKjorer = data.website.hasGoogleAdsTag
+    const bedriftRad = `<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 20px;border-bottom:1px solid var(--k);font-size:13px;">
+      <span style="color:var(--s);font-weight:500;">${b?.navn || 'Bedriften'}</span>
+      <span style="font-size:11px;font-weight:700;padding:2px 10px;border-radius:20px;${bedriftKjorer ? 'background:var(--green-bg);color:var(--green)' : 'background:var(--red-bg);color:var(--red)'};">${bedriftKjorer ? 'Tag detektert' : 'Ingen ads-tag'}</span>
+    </div>`
+    const konkRader = r.annonsoerer.length > 0
+      ? r.annonsoerer.map(a => `<div style="display:flex;align-items:center;justify-content:space-between;padding:9px 20px;border-bottom:1px solid var(--ks);font-size:12px;">
+          <span style="color:var(--d);">${a}</span>
+          <span style="font-size:10px;font-weight:700;background:var(--gold-bg);color:#8a6a00;padding:2px 8px;border-radius:20px;">annonserer nå</span>
+        </div>`).join('')
+      : `<div style="padding:10px 20px;font-size:12px;color:var(--d);">Ingen konkurrenter kjører ads på dette søkordet</div>`
+    return bedriftRad
+      + (r.annonsoerer.length > 0 ? `<div style="padding:8px 20px 4px;font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--d);">Aktive annonsører</div>` : '')
+      + konkRader
+  })()
+
+  // SEO-signaler
+  const w2 = data.website
+  const seoSignalerHtml = (() => {
+    const rader: string[] = []
+    const seoRad2 = (label: string, verdi: string | null | boolean, ok: boolean | 'warn') => {
+      const clr = ok === true ? 'var(--green-bg);color:var(--green)' : ok === 'warn' ? 'var(--gold-bg);color:#8a6a00' : 'var(--red-bg);color:var(--red)'
+      const vis = typeof verdi === 'boolean' ? (verdi ? 'Ja' : 'Nei') : (verdi || '—')
+      return `<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--k);gap:12px;">
+        <span style="font-size:13px;color:var(--d);">${label}</span>
+        <span style="font-size:12px;font-weight:600;background:${clr};padding:2px 10px;border-radius:6px;max-width:320px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex-shrink:0;">${vis}</span>
+      </div>`
+    }
+    rader.push(seoRad2('Meta-tittel', w2.metaTitle, !!w2.metaTitle))
+    rader.push(seoRad2('Meta-beskrivelse', w2.metaDescription, !!w2.metaDescription))
+    rader.push(seoRad2('H1-overskrift', w2.h1Text || (w2.hasH1 ? 'Funnet' : null), w2.hasH1))
+    rader.push(seoRad2('Strukturert data (Schema.org)', w2.hasStructuredData, w2.hasStructuredData))
+    rader.push(seoRad2('SSL / HTTPS', w2.hasSSL, w2.hasSSL))
+    rader.push(seoRad2('Google Analytics', w2.hasGoogleAnalytics, w2.hasGoogleAnalytics ? true : 'warn'))
+    if (data.pagespeed?.loadTimeSeconds) {
+      const lt = data.pagespeed.loadTimeSeconds
+      rader.push(seoRad2('Lastetid', `${lt.toFixed(1)} sek`, lt < 2.5 ? true : lt < 4 ? 'warn' : false))
+    }
+    rader.push(seoRad2('Mobilvennlig (PageSpeed)', data.pagespeed?.isMobileFriendly ?? false, data.pagespeed?.isMobileFriendly ?? false))
+    return rader.join('\n')
+  })()
+
+  // Søkeordforslag
+  const soekeordHtml = (() => {
+    const soekeord: any[] = bransjeConfig?.soekeord || []
+    if (soekeord.length === 0) return `<div style="font-size:13px;color:rgba(250,250,247,.4);">Ingen søkeorddata for denne bransjen</div>`
+    const intentFarge: Record<string, string> = {
+      transaksjon: 'background:rgba(212,66,14,.2);color:var(--red-t)',
+      akutt: 'background:rgba(212,66,14,.3);color:var(--red-t)',
+      kommersiell: 'background:rgba(196,154,26,.15);color:var(--gold-t)',
+      informasjon: 'background:rgba(250,250,247,.08);color:rgba(250,250,247,.45)',
+    }
+    return `<div style="display:flex;flex-wrap:wrap;gap:8px;">` +
+      soekeord.map((s: any) => {
+        const ord = s.ord.replace('[by]', by)
+        const farge = intentFarge[s.intent] || intentFarge.informasjon
+        return `<div style="display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border-radius:10px;background:rgba(250,250,247,.05);border:1px solid rgba(250,250,247,.1);">
+          <span style="font-size:13px;color:rgba(250,250,247,.8);font-weight:500;">${ord}</span>
+          <span style="font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:2px 8px;border-radius:20px;${farge}">${s.intent}</span>
+        </div>`
+      }).join('') + `</div>`
+  })()
+
+  // ── STYRKER ─────────────────────────────────────────────────
+
   const checkSvg = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`
 
   const styrkerHtml = data.styrker.length > 0
@@ -342,6 +462,10 @@ export function renderRapport(data: AuditResult): string {
 
   return template
     .replace('// SCORE_DATA_PLACEHOLDER', scoreDataJs)
+    .replace(/{{RANGERING_HTML}}/g, rangeringHtml)
+    .replace(/{{ANNONSER_HTML}}/g, annonserHtml)
+    .replace(/{{SEO_SIGNALER_HTML}}/g, seoSignalerHtml)
+    .replace(/{{SOEKEORD_HTML}}/g, soekeordHtml)
     .replace(/{{BEDRIFT_NAVN}}/g, b?.navn || 'Ukjent bedrift')
     .replace(/{{ORGNR_FORMATERT}}/g, data.orgnr.replace(/(\d{3})(\d{3})(\d{3})/, '$1 $2 $3'))
     .replace(/{{BRANSJE_NAVN}}/g, data.bransjeNavn || 'Ukjent bransje')
