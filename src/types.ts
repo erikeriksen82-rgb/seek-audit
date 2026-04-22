@@ -1,3 +1,24 @@
+export interface Review {
+  author: string
+  rating: number
+  text: string | null
+  relativeTime: string | null
+}
+
+export interface KonkurrentGmb {
+  tittel: string
+  domene: string
+  posisjon: number
+  rating: number | null
+  reviewCount: number | null
+  hasWebsite: boolean
+}
+
+export interface HistoriskRegnskap {
+  aar: number
+  omsetning: number
+}
+
 export interface BrregEnhet {
   organisasjonsnummer: string
   navn: string
@@ -15,6 +36,7 @@ export interface RegnskapData {
   aaretsResultat?: number
   sumDriftsInntekter?: number
   aar?: number
+  historikk: HistoriskRegnskap[]
 }
 
 export interface WebsiteData {
@@ -38,12 +60,18 @@ export interface WebsiteData {
   hasNewsletterSignup: boolean
   hasAutoResponse: boolean
   hasGratisBefaringUtenFilter: boolean
-  // SEO-signaler
   metaTitle: string | null
   metaDescription: string | null
   hasH1: boolean
   h1Text: string | null
   hasStructuredData: boolean
+  hasFacebook: boolean
+  facebookUrl: string | null
+  hasInstagram: boolean
+  instagramUrl: string | null
+  siteAge: number | null
+  mobileHasCTA: boolean
+  contactPageFound: boolean
   error: string | null
 }
 
@@ -64,6 +92,8 @@ export interface GmbData {
   hasPhone: boolean
   hasWebsite: boolean
   address: string | null
+  reviews: Review[]
+  svarer: boolean
   error: string | null
 }
 
@@ -79,8 +109,8 @@ export interface OrgRankData {
   soekBransjeBy: string | null
   soekBransjeByAkutt: string | null
   toppKonkurrenter: Konkurrent[]
-  annonsoerer: string[]        // domener som kjører Google Ads på søket
-  harAnnonsering: boolean      // noen kjører ads på dette søkordet
+  annonsoerer: string[]
+  harAnnonsering: boolean
   error: string | null
 }
 
@@ -118,6 +148,7 @@ export interface AuditResult {
   pagespeed: PageSpeedData | null
   gmb: GmbData | null
   orgRank: OrgRankData | null
+  konkurrentGmb: KonkurrentGmb[]
   score: SeekScore
   marginTap: MarginTap
   styrker: string[]

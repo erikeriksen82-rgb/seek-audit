@@ -228,6 +228,8 @@ footer{background:var(--s);padding:48px 80px;display:flex;align-items:center;jus
     </div>
   </div>
 
+  {{HISTORISK_OMSETNING_HTML}}
+
   <!-- Signalchips — hva ble detektert -->
   <div class="signal-section">
     <div class="signal-title">Detekterte signaler — nettside</div>
@@ -293,6 +295,12 @@ footer{background:var(--s);padding:48px 80px;display:flex;align-items:center;jus
     {{SEO_SIGNALER_HTML}}
   </div>
 
+  <!-- Konkurrentsammenligning -->
+  {{KONKURRENT_TABELL_HTML}}
+
+  <!-- Anmeldelsesutdrag -->
+  {{ANMELDELSER_HTML}}
+
   <!-- Søkeordforslag -->
   <div style="background:var(--s);border-radius:14px;padding:28px 32px;">
     <div style="font-size:10px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:rgba(250,250,247,.3);margin-bottom:16px;">Anbefalte søkeord å eie i {{BY}}</div>
@@ -311,6 +319,8 @@ footer{background:var(--s);padding:48px 80px;display:flex;align-items:center;jus
     {{GMB_FINDING_HTML}}
   </div>
 </div>
+
+{{INNVENDINGER_HTML}}
 
 <!-- STYRKER -->
 <div class="sek alt">
@@ -415,6 +425,7 @@ const scoreData = {
   hasPhone: false, hasCTA: false, ctaText: null,
   hasMetaPixel: false, hasGoogleAds: false, hasGA: false, hasCRM: false, crmType: null,
   hasNewsletter: false, hasAutoResp: false, hasGratisBefaring: false,
+  hasFacebook: false, hasInstagram: false, mobileHasCTA: false, siteAge: null,
   gmbFound: false, gmbRating: null, gmbReviews: null,
   orgRankBransje: null, orgRankBransjeAkutt: null,
   soekBransjeBy: null, soekBransjeByAkutt: null
@@ -450,6 +461,12 @@ function buildChips() {
   if (scoreData.hasCRM) synlighetsChips.push({ ok: true, label: 'CRM: ' + (scoreData.crmType || 'detektert') });
   else synlighetsChips.push({ ok: false, label: 'Ingen CRM-spor' });
   nettsideChips.push({ ok: scoreData.hasNewsletter, label: 'Nyhetsbrev' });
+  if (scoreData.hasFacebook) nettsideChips.push({ ok: true, label: 'Facebook-lenke' });
+  else nettsideChips.push({ ok: 'warn', label: 'Ingen Facebook-lenke' });
+  if (scoreData.hasInstagram) nettsideChips.push({ ok: true, label: 'Instagram-lenke' });
+  if (scoreData.mobileHasCTA) nettsideChips.push({ ok: true, label: 'CTA synlig mobil' });
+  else nettsideChips.push({ ok: 'warn', label: 'CTA ikke synlig mobil' });
+  if (scoreData.siteAge) nettsideChips.push({ ok: scoreData.siteAge >= new Date().getFullYear() - 3, label: 'Nettside fra ' + scoreData.siteAge });
 
   if (scoreData.orgRankBransje) synlighetsChips.push({ ok: scoreData.orgRankBransje <= 3, warn: scoreData.orgRankBransje <= 6, label: '"' + (scoreData.soekBransjeBy || '') + '" #' + scoreData.orgRankBransje });
   else if (scoreData.soekBransjeBy) synlighetsChips.push({ ok: false, label: '"' + scoreData.soekBransjeBy + '" — ikke i topp 10' });
