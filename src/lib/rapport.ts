@@ -50,7 +50,7 @@ export async function kjorAudit(orgnr: string, googleApiKey?: string, bustCache 
 
   const ansatte = brreg?.antallAnsatte || 3
   const score = beregnScore(website, pagespeed, brreg, bransjeConfig, gmb, orgRank)
-  const marginTap = beregnMarginTap(bransjeConfig, score, ansatte)
+  const marginTap = beregnMarginTap(bransjeConfig, score, ansatte, regnskap?.sumDriftsInntekter ?? null)
   const styrker = finnStyrker(website, brreg, gmb)
   const { pakke: anbefaltPakke, breakEven: breakEvenJobber } = finnAanbefaltPakke(marginTap, ansatte)
 

@@ -103,17 +103,19 @@ export function beregnScore(
 export function beregnMarginTap(
   bransjeConfig: any,
   score: SeekScore,
-  ansatte: number
+  ansatte: number,
+  omsetning: number | null = null
 ): MarginTap {
   const p = bransjeConfig?.parametre
-  if (!p) return { responsGap: 0, ressurslekkasje: 0, oppfolgingssvikt: 0, total: 0 }
+  if (!p) return { responsGap: 0, ressurslekkasje: 0, oppfolgingssvikt: 0, total: 0, snittjobbBeregnet: 0 }
 
   const fagfolk = Math.min(Math.max(Math.ceil(ansatte * 0.7), 1), 8)
   const henvendelerPerUke = p.henvendelser_per_uke_per_ansatt * fagfolk
+  const snittjobb = p.snittjobb_kr || 50000
 
   const responsGap = Math.round(
     henvendelerPerUke * p.andel_etter_arbeidstid * p.andel_tapt_sen_respons *
-    p.snittjobb_kr * (p.margin_prosent / 100) * 52
+    snittjobb * (p.margin_prosent / 100) * 52
   )
 
   const bomPerUke = p.bom_befaringer_per_uke_per_ansatt * fagfolk
@@ -124,14 +126,22 @@ export function beregnMarginTap(
   const tilbudPerMnd = henvendelerPerUke * 4
   const oppfolgingssvikt = Math.round(
     tilbudPerMnd * p.andel_hoyverdi * p.andel_tapt_oppfolging *
-    p.snittjobb_kr * (p.margin_prosent / 100)
+    snittjobb * (p.margin_prosent / 100) * 12
   )
 
+  let total = responsGap + ressurslekkasje + oppfolgingssvikt
+
+  // Cap mot omsetning: tap kan ikke overstige 35 % av faktisk omsetning
+  if (omsetning && omsetning > 0) {
+    total = Math.min(total, Math.round(omsetning * 0.35))
+  }
+
   return {
-    responsGap,
-    ressurslekkasje,
-    oppfolgingssvikt,
-    total: responsGap + ressurslekkasje + oppfolgingssvikt,
+    responsGap: Math.min(responsGap, total),
+    ressurslekkasje: Math.min(ressurslekkasje, total),
+    oppfolgingssvikt: Math.min(oppfolgingssvikt, total),
+    total,
+    snittjobbBeregnet: snittjobb,
   }
 }
 
@@ -161,7 +171,7 @@ export function finnAanbefaltPakke(marginTap: MarginTap, ansatte: number): { pak
   if (ansatte >= 10 || marginTap.total > 500000) valgt = pakker[3]
   else if (ansatte >= 5 || marginTap.total > 200000) valgt = pakker[2]
 
-  const snittjobb = 85000
+  const snittjobb = marginTap.snittjobbBeregnet || 85000
   const margin = 0.28
   const breakEven = Math.ceil(valgt.pris / (snittjobb * margin))
 

@@ -475,6 +475,7 @@ export function renderRapport(data: AuditResult): string {
     .replace(/{{ANMELDELSER_HTML}}/g, renderAnmeldelser(data))
     .replace(/{{INNVENDINGER_HTML}}/g, renderInnvendinger(data))
     .replace(/{{BEDRIFT_NAVN}}/g, b?.navn || 'Ukjent bedrift')
+    .replace(/{{ORGNR}}/g, data.orgnr)
     .replace(/{{ORGNR_FORMATERT}}/g, data.orgnr.replace(/(\d{3})(\d{3})(\d{3})/, '$1 $2 $3'))
     .replace(/{{BRANSJE_NAVN}}/g, data.bransjeNavn || 'Ukjent bransje')
     .replace(/{{BY}}/g, b?.forretningsadresse?.poststed || 'Ukjent')
@@ -483,8 +484,6 @@ export function renderRapport(data: AuditResult): string {
     .replace(/{{ETABLERT_AAR}}/g, etablertAar)
     .replace(/{{RAPPORT_DATO}}/g, dato)
     .replace(/{{OMSETNING_FORMATERT}}/g, omsetning)
-    .replace(/{{SNITTPROSJEKT_KR_FORMATERT}}/g, krFull(snittprosjekt) + ' kr')
-    .replace(/{{LEKKASJE_TOTAL_FORMATERT}}/g, krFull(data.marginTap.total) + ' kr')
     .replace(/{{SEEK_SCORE}}/g, String(data.score.total))
     .replace(/{{SCORE_LABEL}}/g, data.score.label)
     .replace(/{{INTRO_HEADING}}/g, introHeading)
@@ -492,9 +491,43 @@ export function renderRapport(data: AuditResult): string {
     .replace(/{{FINDINGS_HTML}}/g, findingsHtml)
     .replace(/{{GMB_FINDING_HTML}}/g, gmbFindingHtml)
     .replace(/{{STYRKER_HTML}}/g, styrkerHtml)
-    .replace(/{{SNITTJOBB_KR}}/g, String(snittjobb))
-    .replace(/{{HENVENDELSER_ESTIMERT}}/g, String(henvendelser))
-    .replace(/{{MARGIN_PCT}}/g, String(marginPct))
+    .replace(/{{GMB_RATING_DISPLAY}}/g, (() => {
+      if (!data.gmb?.found) return '—'
+      return data.gmb.rating ? data.gmb.rating.toFixed(1) + ' ★' : '—'
+    })())
+    .replace(/{{GMB_RATING_COLOR}}/g, (() => {
+      if (!data.gmb?.found || !data.gmb.rating) return ''
+      return data.gmb.rating >= 4.5 ? 'green' : data.gmb.rating >= 4.0 ? 'gold' : 'red'
+    })())
+    .replace(/{{GMB_REVIEWS_DISPLAY}}/g, (() => {
+      if (!data.gmb?.found) return 'Ingen GMB-profil'
+      const n = data.gmb.reviewCount
+      return n ? `${n} Google-anmeldelser` : 'Ingen anmeldelser'
+    })())
+    .replace(/{{RANK_DISPLAY}}/g, (() => {
+      const r = data.orgRank?.rankBransjeBy
+      if (r === null || r === undefined) return 'Ikke synlig'
+      return `#${r}`
+    })())
+    .replace(/{{RANK_COLOR}}/g, (() => {
+      const r = data.orgRank?.rankBransjeBy
+      if (r === null || r === undefined) return 'red'
+      return r <= 3 ? 'green' : r <= 7 ? 'gold' : ''
+    })())
+    .replace(/{{RANK_SØKEORD}}/g, (() => {
+      const bransjeNavn = bransjeConfig?.soekeord?.[0]?.ord?.replace('[by]', b?.forretningsadresse?.poststed || 'din by') || 'organisk søk'
+      return bransjeNavn
+    })())
+    .replace(/{{LASTETID_DISPLAY}}/g, (() => {
+      const t = data.pagespeed?.loadTimeSeconds
+      if (!t) return '—'
+      return t.toFixed(1) + ' s'
+    })())
+    .replace(/{{LASTETID_COLOR}}/g, (() => {
+      const t = data.pagespeed?.loadTimeSeconds
+      if (!t) return ''
+      return t <= 2.5 ? 'green' : t <= 4 ? 'gold' : 'red'
+    })())
     .replace(/{{ANBEFALT_PAKKE}}/g, data.anbefaltPakke)
     .replace(/{{ANBEFALT_PAKKE_PRIS}}/g, krFull(pakkeKost))
     .replace(/{{ANBEFALT_PAKKE_PRIS_RAW}}/g, String(pakkeKost))

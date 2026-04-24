@@ -136,6 +136,7 @@ export interface MarginTap {
   ressurslekkasje: number
   oppfolgingssvikt: number
   total: number
+  snittjobbBeregnet: number
 }
 
 export interface AuditResult {
