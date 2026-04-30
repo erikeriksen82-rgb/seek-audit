@@ -18,12 +18,19 @@ export function beregnScore(
   orgRank: OrgRankData | null
 ): SeekScore {
 
+  // Når nettside ikke er verifisert kan vi ikke si noe om hva den har eller mangler
+  const nettsideVerifisert = !!website.url && !website.error
+
   // RESPONS-GAP
   const rgFlags: string[] = []
   let rgRaw = 0
-  if (!website.hasChatbot) { rgRaw += v_rg.ingen_chatbot; rgFlags.push('ingen_chatbot') }
-  if (!website.hasAutoResponse) { rgRaw += v_rg.ingen_auto_respons; rgFlags.push('ingen_auto_respons') }
-  if (!website.hasBookingCalendar) { rgRaw += v_rg.ingen_booking_kalender; rgFlags.push('ingen_booking_kalender') }
+  if (nettsideVerifisert) {
+    if (!website.hasChatbot) { rgRaw += v_rg.ingen_chatbot; rgFlags.push('ingen_chatbot') }
+    if (!website.hasAutoResponse) { rgRaw += v_rg.ingen_auto_respons; rgFlags.push('ingen_auto_respons') }
+    if (!website.hasBookingCalendar) { rgRaw += v_rg.ingen_booking_kalender; rgFlags.push('ingen_booking_kalender') }
+  } else {
+    rgFlags.push('nettside_ikke_verifisert')
+  }
   rgRaw += v_rg.ingen_24_7_vakt; rgFlags.push('ingen_24_7_vakt')
   const rgMax = v_rg.ingen_chatbot + v_rg.ingen_auto_respons + v_rg.ingen_booking_kalender + v_rg.ingen_24_7_vakt
   const responsGap: AreaScore = { raw: rgRaw, max: rgMax, pct: Math.min(100, Math.round(rgRaw / rgMax * 100)), flags: rgFlags }
@@ -31,21 +38,25 @@ export function beregnScore(
   // KUNDEREISE
   const kjFlags: string[] = []
   let kjRaw = 0
-  if (website.hasGratisBefaringUtenFilter) { kjRaw += v_kj.gratis_befaring_uten_filter; kjFlags.push('gratis_befaring_uten_filter') }
-  if (website.formFieldCount < 3 && website.hasContactForm) { kjRaw += v_kj.skjema_under_3_felter; kjFlags.push('skjema_under_3_felter') }
-  if (!website.hasQualificationFields) { kjRaw += v_kj.ingen_kvalifiseringssporsmal; kjFlags.push('ingen_kvalifiseringssporsmal') }
-  if (!website.hasClickablePhone) { kjRaw += v_kj.telefon_ikke_klikkbart_mobil; kjFlags.push('telefon_ikke_klikkbart_mobil') }
-  if (!website.hasClearCTA) { kjRaw += v_kj.utydelig_cta; kjFlags.push('utydelig_cta') }
+  if (nettsideVerifisert) {
+    if (website.hasGratisBefaringUtenFilter) { kjRaw += v_kj.gratis_befaring_uten_filter; kjFlags.push('gratis_befaring_uten_filter') }
+    if (website.formFieldCount < 3 && website.hasContactForm) { kjRaw += v_kj.skjema_under_3_felter; kjFlags.push('skjema_under_3_felter') }
+    if (!website.hasQualificationFields) { kjRaw += v_kj.ingen_kvalifiseringssporsmal; kjFlags.push('ingen_kvalifiseringssporsmal') }
+    if (!website.hasClickablePhone) { kjRaw += v_kj.telefon_ikke_klikkbart_mobil; kjFlags.push('telefon_ikke_klikkbart_mobil') }
+    if (!website.hasClearCTA) { kjRaw += v_kj.utydelig_cta; kjFlags.push('utydelig_cta') }
+  }
   const kjMax = v_kj.gratis_befaring_uten_filter + v_kj.skjema_under_3_felter + v_kj.ingen_kvalifiseringssporsmal + v_kj.telefon_ikke_klikkbart_mobil + v_kj.utydelig_cta
   const kundereise: AreaScore = { raw: kjRaw, max: kjMax, pct: Math.min(100, Math.round(kjRaw / kjMax * 100)), flags: kjFlags }
 
   // OPPFØLGING
   const opFlags: string[] = []
   let opRaw = 0
-  if (!website.hasCRMTracking) { opRaw += v_op.ingen_crm_spor; opFlags.push('ingen_crm_spor') }
-  if (!website.hasGoogleAdsTag && !website.hasCRMTracking) { opRaw += v_op.ingen_email_automasjon; opFlags.push('ingen_email_automasjon') }
-  if (!website.hasMetaPixel && !website.hasGoogleAdsTag) { opRaw += v_op.ingen_retargeting_pixel; opFlags.push('ingen_retargeting_pixel') }
-  if (!website.hasNewsletterSignup) { opRaw += v_op.ingen_nyhetsbrev; opFlags.push('ingen_nyhetsbrev') }
+  if (nettsideVerifisert) {
+    if (!website.hasCRMTracking) { opRaw += v_op.ingen_crm_spor; opFlags.push('ingen_crm_spor') }
+    if (!website.hasGoogleAdsTag && !website.hasCRMTracking) { opRaw += v_op.ingen_email_automasjon; opFlags.push('ingen_email_automasjon') }
+    if (!website.hasMetaPixel && !website.hasGoogleAdsTag) { opRaw += v_op.ingen_retargeting_pixel; opFlags.push('ingen_retargeting_pixel') }
+    if (!website.hasNewsletterSignup) { opRaw += v_op.ingen_nyhetsbrev; opFlags.push('ingen_nyhetsbrev') }
+  }
   const opMax = v_op.ingen_crm_spor + v_op.ingen_email_automasjon + v_op.ingen_retargeting_pixel + v_op.ingen_nyhetsbrev
   const oppfolging: AreaScore = { raw: opRaw, max: opMax, pct: Math.min(100, Math.round(opRaw / opMax * 100)), flags: opFlags }
 
@@ -92,10 +103,10 @@ export function beregnScore(
   const terskler = vekter.score_terskler
   let label: SeekScore['label']
   let labelColor: string
-  if (total >= terskler.het_lead) { label = 'HET LEAD'; labelColor = '#E8A830' }
-  else if (total >= terskler.varm_lead) { label = 'VARM LEAD'; labelColor = '#E8A830' }
-  else if (total >= terskler.lav_match) { label = 'LAV MATCH'; labelColor = 'rgba(255,255,255,0.08)' }
-  else { label = 'IKKE PRIORITER'; labelColor = 'rgba(255,255,255,0.05)' }
+  if (total >= terskler.het_lead) { label = 'Kritiske funn'; labelColor = '#E8A830' }
+  else if (total >= terskler.varm_lead) { label = 'Viktige funn'; labelColor = '#E8A830' }
+  else if (total >= terskler.lav_match) { label = 'Noen funn'; labelColor = 'rgba(255,255,255,0.08)' }
+  else { label = 'Få funn'; labelColor = 'rgba(255,255,255,0.05)' }
 
   return { total, label, labelColor, synlighet, responsGap, kundereise, oppfolging }
 }
@@ -167,9 +178,12 @@ export function finnAanbefaltPakke(marginTap: MarginTap, ansatte: number): { pak
     { pakke: 'Drift', pris: 25000 },
     { pakke: 'Vekst', pris: 35000 },
   ]
-  let valgt = pakker[1]
-  if (ansatte >= 10 || marginTap.total > 500000) valgt = pakker[3]
-  else if (ansatte >= 5 || marginTap.total > 200000) valgt = pakker[2]
+
+  let valgt = pakker[0] // Intro er default
+  if (ansatte >= 15) valgt = pakker[3]       // Vekst: 15+ ansatte
+  else if (ansatte >= 8) valgt = pakker[2]   // Drift: 8–14 ansatte
+  else if (ansatte >= 2) valgt = pakker[1]   // Start: 2–7 ansatte
+  // 0–1 ansatte: Intro
 
   const snittjobb = marginTap.snittjobbBeregnet || 85000
   const margin = 0.28

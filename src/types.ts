@@ -24,10 +24,13 @@ export interface BrregEnhet {
   navn: string
   antallAnsatte: number
   naeringskode1?: { kode: string; beskrivelse: string }
-  forretningsadresse?: { poststed: string; adresse?: string[] }
+  forretningsadresse?: { poststed: string; kommune?: string; adresse?: string[] }
   stiftelsesdato?: string
   organisasjonsform?: { kode: string; beskrivelse: string }
   hjemmeside?: string
+  epostadresse?: string
+  mobil?: string
+  telefon?: string
   konkurs?: boolean
   underAvvikling?: boolean
 }
@@ -123,7 +126,7 @@ export interface AreaScore {
 
 export interface SeekScore {
   total: number
-  label: 'HET LEAD' | 'VARM LEAD' | 'LAV MATCH' | 'IKKE PRIORITER'
+  label: 'Kritiske funn' | 'Viktige funn' | 'Noen funn' | 'Få funn'
   labelColor: string
   synlighet: AreaScore
   responsGap: AreaScore
