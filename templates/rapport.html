@@ -183,7 +183,7 @@ footer{background:var(--s);padding:48px 80px;display:flex;align-items:center;jus
   <div class="nav-right">
     <span class="nav-date">{{RAPPORT_DATO}}</span>
     <span class="nav-score">{{SEEK_SCORE}} / 100</span>
-    <span class="nav-badge">{{SCORE_LABEL}}</span>
+    <span class="nav-badge">{{SCORE_LABEL}} · {{SEEK_SCORE}}/100</span>
     <a class="nav-pdf" href="/pdf/{{ORGNR}}">&#8595; Last ned PDF</a>
   </div>
 </nav>
@@ -194,13 +194,12 @@ footer{background:var(--s);padding:48px 80px;display:flex;align-items:center;jus
   <div class="hero-glow1"></div>
   <div class="hero-glow2"></div>
   <div class="hero-tag">SEEK Audit · {{BRANSJE_NAVN}} · {{BY}}</div>
-  <h1>{{BEDRIFT_NAVN}}<br><em>salgsledd-rapport</em></h1>
+  <h1>{{BEDRIFT_NAVN}}<br><em>digital analyse</em></h1>
   <div class="hero-bottom">
     <p class="hero-desc">Automatisk gjennomgang av digitalt salgsledd, synlighet og responsinfrastruktur. Basert på live-data fra nettside, Google og offentlige registre.</p>
     <div class="hero-score-block">
       <div class="hero-score-num">{{SEEK_SCORE}}</div>
-      <div class="hero-score-label">SEEK-score</div>
-      <div class="hero-score-status">{{SCORE_LABEL}}</div>
+      <div class="hero-score-label">Analysescore</div>
     </div>
   </div>
 </div>
@@ -317,7 +316,7 @@ footer{background:var(--s);padding:48px 80px;display:flex;align-items:center;jus
 <div class="sek dark" id="funn">
   <div class="sek-tag gold">02 — Funn</div>
   <h2>Svakheter vi fant<br><em>i salgsleddet</em></h2>
-  <p class="sek-lead">Hver observasjon er basert på live-data fra nettside, Google Places og søkeresultater. Ingen estimater — kun det vi faktisk målte.</p>
+  <p class="sek-lead">Observasjonene er basert på live-data fra nettside, Google og offentlige registre. Tallene i regnestykket er bransjesnitt og bør ses på som størrelsesorden, ikke eksakte tall.</p>
 
   <div class="findings">
     {{FINDINGS_HTML}}
@@ -325,13 +324,11 @@ footer{background:var(--s);padding:48px 80px;display:flex;align-items:center;jus
   </div>
 </div>
 
-{{INNVENDINGER_HTML}}
-
 <!-- STYRKER -->
 <div class="sek alt">
   <div class="sek-tag">03 — Styrker</div>
   <h2>Det som allerede<br><em>er på plass</em></h2>
-  <p class="sek-lead">Disse signalene ble detektert og er positive. Brukes til anerkjennelse tidlig i samtalen.</p>
+  <p class="sek-lead">Dette er det som allerede fungerer bra hos dere — og som vi anbefaler å bygge videre på.</p>
   <div class="styrker">
     {{STYRKER_HTML}}
   </div>
@@ -398,20 +395,20 @@ footer{background:var(--s);padding:48px 80px;display:flex;align-items:center;jus
     <div class="pakke-card">
       <div class="pakke-head">
         <span class="pakke-name">Break-even</span>
-        <span class="pakke-price">{{BREAK_EVEN_JOBBER}} jobb(er)/mnd</span>
+        <span class="pakke-price">{{BREAK_EVEN_JOBBER_TEKST}}</span>
       </div>
       <div class="pakke-body">
         <div class="pakke-row" style="flex-direction:column;align-items:flex-start;gap:6px;padding:8px 0;">
-          <span style="font-size:13px;color:var(--d);line-height:1.6;">Én ekstra jobb per måned dekker hele tjenesten. Med {{ANSATTE}} ansatte og snittprosjekt {{SNITTPROSJEKT_KR_FORMATERT}} er dette realistisk å hente fra de tapte henvendelsene alene.</span>
+          <span style="font-size:13px;color:var(--d);line-height:1.6;">Én ekstra jobb per måned dekker hele tjenesten. Med {{ANSATTE_TEKST}} og snittprosjekt {{SNITTPROSJEKT_KR_FORMATERT}} er dette realistisk å hente fra de tapte henvendelsene alene.</span>
         </div>
       </div>
     </div>
   </div>
 
   <div class="replikk-block">
-    <div class="replikk-tag">Åpningsreplikk for samtalen</div>
-    <div class="replikk-text">«{{AAPNINGSREPLIKK}}»</div>
-    <div class="replikk-note">SEEK · Kun for intern bruk · {{RAPPORT_DATO}}</div>
+    <div class="replikk-tag">Vår viktigste observasjon</div>
+    <div class="replikk-text">{{AAPNINGSREPLIKK}}</div>
+    <div class="replikk-note">SEEK · {{RAPPORT_DATO}}</div>
   </div>
 </div>
 
@@ -453,19 +450,24 @@ function buildChips() {
   if (scoreData.hasForm) nettsideChips.push({ ok: 'warn', label: 'Kontaktskjema (' + scoreData.formFields + ' felt)' });
   else nettsideChips.push({ ok: false, label: 'Ingen kontaktskjema detektert' });
   nettsideChips.push({ ok: scoreData.hasPhone, label: 'Klikkbart telefonnummer' });
-  nettsideChips.push({ ok: scoreData.hasAutoResp, label: 'Automatisk bekreftelse' });
+  if (scoreData.hasAutoResp) nettsideChips.push({ ok: true, label: 'Automatisk bekreftelse' });
+  else nettsideChips.push({ ok: false, label: 'Ingen automatisk bekreftelse' });
   if (scoreData.hasGratisBefaring) nettsideChips.push({ ok: 'warn', label: '"Gratis befaring" uten filter' });
   if (scoreData.ctaText) nettsideChips.push({ ok: scoreData.hasCTA, label: 'CTA: "' + scoreData.ctaText + '"' });
 
   // Synlighet-chips
-  if (scoreData.gmbFound) nettsideChips.push({ ok: true, label: 'GMB: ' + (scoreData.gmbRating ? scoreData.gmbRating + '★ (' + scoreData.gmbReviews + ' anm.)' : 'funnet') });
+  if (scoreData.gmbFound) {
+    const anmTekst = scoreData.gmbReviews !== null ? ' (' + scoreData.gmbReviews + ' anm.)' : '';
+    nettsideChips.push({ ok: true, label: 'GMB: ' + (scoreData.gmbRating ? scoreData.gmbRating + '★' + anmTekst : 'funnet') });
+  }
   else synlighetsChips.push({ ok: false, label: 'Google Business Profile mangler' });
-  nettsideChips.push({ ok: scoreData.hasMetaPixel, label: 'Meta Pixel' });
-  nettsideChips.push({ ok: scoreData.hasGoogleAds, label: 'Google Ads-tag' });
-  nettsideChips.push({ ok: scoreData.hasGA, label: 'Google Analytics' });
+  if (scoreData.hasMetaPixel) nettsideChips.push({ ok: true, label: 'Meta Pixel' });
+  if (scoreData.hasGoogleAds) nettsideChips.push({ ok: true, label: 'Google Ads-tag' });
+  if (scoreData.hasGA) nettsideChips.push({ ok: true, label: 'Google Analytics' });
+  else nettsideChips.push({ ok: false, label: 'Ingen Google Analytics' });
   if (scoreData.hasCRM) synlighetsChips.push({ ok: true, label: 'CRM: ' + (scoreData.crmType || 'detektert') });
   else synlighetsChips.push({ ok: false, label: 'Ingen CRM-spor' });
-  nettsideChips.push({ ok: scoreData.hasNewsletter, label: 'Nyhetsbrev' });
+  if (scoreData.hasNewsletter) nettsideChips.push({ ok: true, label: 'Nyhetsbrev' });
   if (scoreData.hasFacebook) nettsideChips.push({ ok: true, label: 'Facebook-lenke' });
   else nettsideChips.push({ ok: 'warn', label: 'Ingen Facebook-lenke' });
   if (scoreData.hasInstagram) nettsideChips.push({ ok: true, label: 'Instagram-lenke' });

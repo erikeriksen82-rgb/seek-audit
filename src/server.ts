@@ -58,7 +58,9 @@ app.get('/pdf/:orgnr', async (req, res) => {
 // API-endepunkt (for debugging og fremtidig bruk)
 app.get('/api/audit/:orgnr', async (req, res) => {
   try {
-    const data = await kjorAudit(req.params.orgnr, GOOGLE_API_KEY)
+    const bustCache = req.query.bust === 'true' || req.query.refresh === '1'
+    const manuellUrl = req.query.url ? String(req.query.url) : undefined
+    const data = await kjorAudit(req.params.orgnr, GOOGLE_API_KEY, bustCache, manuellUrl, SERP_API_KEY)
     res.json(data)
   } catch (err: any) {
     res.status(500).json({ error: err.message })

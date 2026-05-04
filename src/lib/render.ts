@@ -127,7 +127,7 @@ function renderKonkurrentTabell(data: AuditResult): string {
       <span style="margin-left:8px;font-size:10px;background:var(--gold-bg);color:#8a6a00;padding:1px 7px;border-radius:10px;font-weight:700;vertical-align:middle;">DIN BEDRIFT</span>
     </td>
     <td style="padding:10px 16px;">${stjerner(gmbTarget?.rating ?? null)}</td>
-    <td style="padding:10px 16px;font-family:'Syne Mono',monospace;font-size:12px;">${gmbTarget?.found ? (gmbTarget.reviewCount ?? 0) : '<span style="color:var(--red);font-size:12px;">ingen GMB</span>'}</td>
+    <td style="padding:10px 16px;font-family:'Syne Mono',monospace;font-size:12px;">${gmbTarget?.found ? (gmbTarget.reviewCount !== null ? gmbTarget.reviewCount : '—') : '<span style="color:var(--red);font-size:12px;">ingen GMB</span>'}</td>
     <td style="padding:10px 16px;">${gmbTarget?.found ? '<span style="color:var(--green);font-weight:700;">✓ Verifisert</span>' : '<span style="color:var(--red);font-weight:700;">✗ Mangler</span>'}</td>
   </tr>`
 
@@ -177,7 +177,7 @@ function renderAnmeldelser(data: AuditResult): string {
 
   const lavRating = reviews.filter(r => r.rating <= 3)
   const lavRatingHtml = lavRating.length > 0
-    ? `<div style="margin-top:10px;padding:10px 14px;background:var(--red-bg);border-radius:8px;border:1px solid rgba(212,66,14,.2);font-size:12px;font-weight:700;color:var(--red);">⚠ ${lavRating.length} av siste ${reviews.length} anmeldelser er 3 stjerner eller lavere — nevn dette i samtalen</div>`
+    ? `<div style="margin-top:10px;padding:10px 14px;background:var(--red-bg);border-radius:8px;border:1px solid rgba(212,66,14,.2);font-size:12px;font-weight:700;color:var(--red);">⚠ ${lavRating.length} av siste ${reviews.length} anmeldelser er 3 stjerner eller lavere</div>`
     : ''
 
   const svarerHtml = data.gmb.svarer
@@ -236,7 +236,7 @@ function renderInnvendinger(data: AuditResult): string {
         <div style="font-size:16px;font-weight:700;color:var(--s);font-family:'Instrument Serif',serif;font-style:italic;">${inn.innvending}</div>
       </div>
       <div style="padding:14px 18px;">
-        <div style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin-bottom:8px;">Tilnærming: ${inn.svar}</div>
+        <div style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin-bottom:8px;">${inn.svar}</div>
         <div style="font-size:13px;color:var(--d);line-height:1.65;border-left:3px solid var(--gold-bg);padding-left:12px;">"${inn.replikk}"</div>
       </div>
     </div>`).join('')
@@ -268,7 +268,7 @@ export function renderRapport(data: AuditResult): string {
   const p = bransjeConfig?.parametre
 
   const dato = new Date(data.timestamp).toLocaleDateString('nb-NO', { day: 'numeric', month: 'long', year: 'numeric' })
-  const ansatte = b?.antallAnsatte || 3
+  const ansatte = b?.antallAnsatte || 1
   const snittjobb = p?.snittjobb_kr || 85000
   const snittprosjekt = p?.snittjobb_prosjekt_kr || snittjobb
   const marginPct = p?.margin_prosent || 28
@@ -479,7 +479,8 @@ export function renderRapport(data: AuditResult): string {
     .replace(/{{ORGNR_FORMATERT}}/g, data.orgnr.replace(/(\d{3})(\d{3})(\d{3})/, '$1 $2 $3'))
     .replace(/{{BRANSJE_NAVN}}/g, data.bransjeNavn || 'Ukjent bransje')
     .replace(/{{BY}}/g, b?.forretningsadresse?.poststed || 'Ukjent')
-    .replace(/{{ANSATTE}}/g, String(ansatte))
+    .replace(/{{ANSATTE}}/g, b?.antallAnsatte ? String(b.antallAnsatte) : 'Ikke registrert')
+    .replace(/{{ANSATTE_TEKST}}/g, b?.antallAnsatte ? `${b.antallAnsatte} ansatte` : 'bedriftens størrelse')
     .replace(/{{ANSATTE_RAW}}/g, String(ansatte))
     .replace(/{{ETABLERT_AAR}}/g, etablertAar)
     .replace(/{{RAPPORT_DATO}}/g, dato)
@@ -502,7 +503,7 @@ export function renderRapport(data: AuditResult): string {
     .replace(/{{GMB_REVIEWS_DISPLAY}}/g, (() => {
       if (!data.gmb?.found) return 'Ingen GMB-profil'
       const n = data.gmb.reviewCount
-      return n ? `${n} Google-anmeldelser` : 'Ingen anmeldelser'
+      return n !== null ? `${n} Google-anmeldelser` : 'Anmeldelser ikke tilgjengelig'
     })())
     .replace(/{{RANK_DISPLAY}}/g, (() => {
       const r = data.orgRank?.rankBransjeBy
@@ -531,5 +532,7 @@ export function renderRapport(data: AuditResult): string {
     .replace(/{{ANBEFALT_PAKKE}}/g, data.anbefaltPakke)
     .replace(/{{ANBEFALT_PAKKE_PRIS}}/g, krFull(pakkeKost))
     .replace(/{{ANBEFALT_PAKKE_PRIS_RAW}}/g, String(pakkeKost))
+    .replace(/{{SNITTPROSJEKT_KR_FORMATERT}}/g, krFull(snittprosjekt) + ' kr')
     .replace(/{{BREAK_EVEN_JOBBER}}/g, String(data.breakEvenJobber))
+    .replace(/{{BREAK_EVEN_JOBBER_TEKST}}/g, data.breakEvenJobber === 1 ? '1 jobb/mnd' : `${data.breakEvenJobber} jobber/mnd`)
 }

@@ -2,8 +2,8 @@ import { WebsiteData } from '../types'
 import { hentBrregData, hentRegnskapsdata, finnBransjeKey } from './brreg'
 import { skrapNettside } from './scraper'
 import { hentPageSpeed } from './pagespeed'
-import { hentGmbData, finnNettside, hentKonkurrentGmb } from './places'
-import { hentOrganiskRangering } from './serp'
+import { hentGmbData, finnNettside, hentKonkurrentGmb, hentGmbDetaljerViaPlaceId } from './places'
+import { hentOrganiskRangering, hentGmbViaSerpApi } from './serp'
 import { beregnScore, beregnMarginTap, finnStyrker, finnAanbefaltPakke } from './scoring'
 import { cacheGet, cacheSet } from './cache'
 import { AuditResult } from '../types'
@@ -48,19 +48,55 @@ export async function kjorAudit(orgnr: string, googleApiKey?: string, bustCache 
     if (nettsideUrl) console.log(`Google Places fant: ${nettsideUrl}`)
   }
 
-  const [website, pagespeed, gmb, orgRank] = await Promise.all([
+  const søkeTerm = bransjeConfig?.soekeord?.[0]?.ord?.replace(' [by]', '').replace('[by]', '') ?? bransjeConfig?.navn
+
+  const [website, pagespeed, gmbRå, orgRank] = await Promise.all([
     nettsideUrl ? skrapNettside(nettsideUrl) : Promise.resolve(ingenNettside()),
     nettsideUrl && googleApiKey ? hentPageSpeed(nettsideUrl, googleApiKey) : Promise.resolve(null),
-    brreg?.navn ? hentGmbData(brreg.navn, poststed, googleApiKey, telefon, kommune) : Promise.resolve(null),
-    serpApiKey && brreg?.navn && bransjeConfig?.navn ? hentOrganiskRangering(brreg.navn, bransjeConfig.navn, poststed, serpApiKey) : Promise.resolve(null),
+    brreg?.navn ? (serpApiKey
+      ? hentGmbViaSerpApi(brreg.navn, serpApiKey).then(r => r ?? hentGmbData(brreg!.navn, poststed, googleApiKey, telefon, kommune))
+      : hentGmbData(brreg.navn, poststed, googleApiKey, telefon, kommune)
+    ) : Promise.resolve(null),
+    serpApiKey && brreg?.navn && søkeTerm ? hentOrganiskRangering(brreg.navn, søkeTerm, poststed, serpApiKey, nettsideUrl) : Promise.resolve(null),
   ])
+
+  // Suppler SerpAPI GMB med Places Details når anmeldelsestall mangler
+  let gmb = gmbRå
+  if (gmb?.found && gmb.reviewCount === null && googleApiKey) {
+    let placeId = gmb.placeId
+
+    // Hvis vi ikke har placeId fra SerpAPI, prøv telefonnummer-søk i Places API
+    if (!placeId && telefon) {
+      const normTlf = telefon.replace(/\D/g, '')
+      if (normTlf.length === 8) {
+        try {
+          const axios = (await import('axios')).default
+          const søk = await axios.get('https://maps.googleapis.com/maps/api/place/findplacefromtext/json', {
+            params: { input: `+47${normTlf}`, inputtype: 'phonenumber', fields: 'place_id', key: googleApiKey },
+            timeout: 5000,
+          })
+          placeId = søk.data?.candidates?.[0]?.place_id ?? null
+          if (placeId) console.log(`  Fant placeId via telefon: ${placeId}`)
+        } catch {}
+      }
+    }
+
+    if (placeId) {
+      console.log(`  Supplerer GMB-data via Places Details (placeId: ${placeId})...`)
+      const detaljer = await hentGmbDetaljerViaPlaceId(placeId, googleApiKey)
+      if (detaljer) {
+        gmb = { ...gmb, placeId, reviewCount: detaljer.reviewCount, rating: detaljer.rating ?? gmb.rating, reviews: detaljer.reviews, svarer: detaljer.svarer }
+        console.log(`  GMB supplert: ${detaljer.reviewCount} anmeldelser, rating: ${detaljer.rating}`)
+      }
+    }
+  }
 
   // Hent GMB-data for topp konkurrenter
   const konkurrentGmb = (googleApiKey && orgRank?.toppKonkurrenter?.length)
     ? await hentKonkurrentGmb(orgRank.toppKonkurrenter, poststed, googleApiKey)
     : []
 
-  const ansatte = brreg?.antallAnsatte || 3
+  const ansatte = brreg?.antallAnsatte || 1
   const score = beregnScore(website, pagespeed, brreg, bransjeConfig, gmb, orgRank)
   const marginTap = beregnMarginTap(bransjeConfig, score, ansatte, regnskap?.sumDriftsInntekter ?? null)
   const styrker = finnStyrker(website, brreg, gmb)

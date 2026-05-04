@@ -15,24 +15,46 @@ function normaliserTelefon(tlf: string | undefined): string | null {
   return null
 }
 
-async function finnPlaceId(query: string, inputtype: 'textquery' | 'phonenumber', googleApiKey: string): Promise<string | null> {
+function navnLikhetOk(funnetNavn: string, søktNavn: string): boolean {
+  const rens = (s: string) => s.toLowerCase().replace(/\b(as|ans|da|enk|sa)\b/g, '').replace(/[^a-zæøå0-9]/g, ' ').trim()
+  const a = rens(funnetNavn)
+  const b = rens(søktNavn)
+  const ord = b.split(/\s+/).filter(o => o.length > 2)
+  return ord.some(o => a.includes(o))
+}
+
+async function finnPlaceId(query: string, inputtype: 'textquery' | 'phonenumber', googleApiKey: string, bedriftNavn?: string): Promise<string | null> {
   try {
-    const søk = await axios.get('https://maps.googleapis.com/maps/api/place/findplacefromtext/json', {
-      params: { input: query, inputtype, fields: 'place_id,name', key: googleApiKey },
-      timeout: 6000,
-    })
-    const status = søk.data?.status
-    const candidates = søk.data?.candidates ?? []
-    console.log(`  GMB [${inputtype}] "${query}" → status: ${status}, treff: ${candidates.length}${candidates[0] ? ` (${candidates[0].name})` : ''}`)
-    if (status === 'REQUEST_DENIED') console.error('  ⚠ API-nøkkel mangler tilgang til Places API:', søk.data?.error_message)
-    return candidates[0]?.place_id ?? null
+    if (inputtype === 'textquery') {
+      const søk = await axios.get('https://maps.googleapis.com/maps/api/place/textsearch/json', {
+        params: { query, language: 'no', key: googleApiKey },
+        timeout: 6000,
+      })
+      const status = søk.data?.status
+      const results = søk.data?.results ?? []
+      // Valider at funnet bedrift faktisk ligner på det vi søkte etter
+      const treff = bedriftNavn
+        ? results.find((r: any) => navnLikhetOk(r.name ?? '', bedriftNavn))
+        : results[0]
+      console.log(`  GMB textsearch "${query}" → status: ${status}, treff: ${results.length}, valgt: ${treff?.name ?? 'ingen'}`)
+      return treff?.place_id ?? null
+    } else {
+      const søk = await axios.get('https://maps.googleapis.com/maps/api/place/findplacefromtext/json', {
+        params: { input: query, inputtype: 'phonenumber', fields: 'place_id,name', key: googleApiKey },
+        timeout: 6000,
+      })
+      const status = søk.data?.status
+      const candidates = søk.data?.candidates ?? []
+      console.log(`  GMB phonenumber "${query}" → status: ${status}, treff: ${candidates.length}${candidates[0] ? ` (${candidates[0].name})` : ''}`)
+      return candidates[0]?.place_id ?? null
+    }
   } catch (err: any) {
-    console.error(`  GMB søk feilet [${inputtype}] "${query}":`, err.message)
+    console.error(`  GMB søk feilet "${query}":`, err.message)
     return null
   }
 }
 
-async function skrapGmbViaMaps(søkeTekst: string): Promise<GmbData | null> {
+async function skrapGmbViaGoogleSøk(søkeTekst: string): Promise<GmbData | null> {
   let browser = null
   try {
     browser = await puppeteer.launch({
@@ -41,71 +63,53 @@ async function skrapGmbViaMaps(søkeTekst: string): Promise<GmbData | null> {
     })
     const page = await browser.newPage()
     await page.setUserAgent('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36')
-    await page.setExtraHTTPHeaders({ 'Accept-Language': 'no-NO,no;q=0.9' })
+    await page.setExtraHTTPHeaders({ 'Accept-Language': 'no-NO,no;q=0.9,en;q=0.8' })
 
-    const url = `https://www.google.com/maps/search/${encodeURIComponent(søkeTekst)}?hl=no`
-    console.log(`  GMB Puppeteer → ${url}`)
-    await page.goto(url, { waitUntil: 'networkidle2', timeout: 20000 })
+    const url = `https://www.google.com/search?q=${encodeURIComponent(søkeTekst)}&hl=no&gl=no`
+    console.log(`  GMB scrape → ${url}`)
+    await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 20000 })
     await new Promise(r => setTimeout(r, 2000))
 
-    // Klikk første resultat om vi er på listesiden
-    const erListeside = await page.$('[role="feed"]')
-    if (erListeside) {
-      const forsteResultat = await page.$('a[href*="/maps/place/"]')
-      if (forsteResultat) {
-        await forsteResultat.click()
-        await new Promise(r => setTimeout(r, 3000))
-      } else {
-        return null
-      }
-    }
-
-    // Sjekk om vi har en bedriftsprofil oppe
-    const harProfil = await page.$('[data-item-id="rating"]') || await page.$('button[data-item-id*="phone"]') || await page.$('span[aria-label*="stjerner"]')
-    if (!harProfil) {
-      const tittel = await page.title()
-      console.log(`  GMB: ingen profil funnet, sidetittel: ${tittel}`)
-      return null
-    }
-
     const data = await page.evaluate(() => {
-      const tekst = (sel: string) => document.querySelector(sel)?.textContent?.trim() || null
+      // Knowledge panel — Google viser dette i høyre kolonne for bedrifter
+      const heleHtml = document.body.innerText
 
-      // Rating og antall anmeldelser
-      const ratingEl = document.querySelector('span[aria-label*="stjerner"], span[aria-label*="stars"]')
-      const ratingTekst = ratingEl?.getAttribute('aria-label') || ''
-      const ratingMatch = ratingTekst.match(/(\d[.,]\d)/)
+      // Navn: h2/h3 i knowledge panel
+      const navnEl = document.querySelector('[data-attrid="title"] span, [data-ved] h2, .SPZz6b span, .qrShPb span')
+      const name = navnEl?.textContent?.trim() || null
+
+      // Rating: ser etter "4,8" eller "5,0" nær stjerner
+      const ratingMatch = heleHtml.match(/(\d[,.]\d)\s*(?:★|\*|stjerner?|stars?)/i)
+        || heleHtml.match(/(?:Vurdering|Rating|Rangering)[:\s]+(\d[,.]\d)/i)
       const rating = ratingMatch ? parseFloat(ratingMatch[1].replace(',', '.')) : null
 
-      const reviewEl = document.querySelector('button[aria-label*="anmeldelser"], button[aria-label*="reviews"]')
-      const reviewTekst = reviewEl?.getAttribute('aria-label') || reviewEl?.textContent || ''
-      const reviewMatch = reviewTekst.match(/(\d+)/)
+      // Antall anmeldelser: "16 reviews" eller "16 anmeldelser"
+      const reviewMatch = heleHtml.match(/(\d+)\s+(?:Google-anmeldelser|anmeldelser|reviews)/i)
       const reviewCount = reviewMatch ? parseInt(reviewMatch[1]) : null
 
-      // Navn
-      const name = document.querySelector('h1')?.textContent?.trim() || null
-
-      // Adresse
-      const adresseEl = document.querySelector('button[data-item-id="address"], [data-tooltip="Kopier adresse"]')
-      const address = adresseEl?.textContent?.trim() || null
-
       // Telefon
-      const tlfEl = document.querySelector('button[data-item-id*="phone"], [data-tooltip="Kopier telefonnummer"]')
-      const hasPhone = !!tlfEl
+      const tlfMatch = heleHtml.match(/(?:Telefon|Phone|Tlf)[:\s]*([0-9\s]{8,12})/i)
+        || heleHtml.match(/\b((?:\+47\s?)?[49]\d[\s]?\d{2}[\s]?\d{2}[\s]?\d{2})\b/)
+      const hasPhone = !!tlfMatch
 
       // Nettside
-      const websiteEl = document.querySelector('a[data-item-id="authority"], a[aria-label*="nettsted"], a[aria-label*="website"]')
-      const hasWebsite = !!websiteEl
+      const hasWebsite = !!document.querySelector('a[data-url*="http"]:not([href*="google"]), a[aria-label*="ebsite"], a[aria-label*="nettsted"]')
+        || heleHtml.includes('Website') || heleHtml.includes('Nettsted')
 
       // Åpningstider
-      const hasOpeningHours = !!document.querySelector('[data-item-id*="oh"], button[aria-label*="Åpningstider"], button[aria-label*="Hours"]')
+      const hasOpeningHours = heleHtml.includes('Åpent') || heleHtml.includes('Stengt')
+        || heleHtml.includes('Open') || heleHtml.includes('Closed') || heleHtml.includes('Åpningstider')
 
-      return { name, rating, reviewCount, address, hasPhone, hasWebsite, hasOpeningHours }
+      // Adresse
+      const adresseMatch = heleHtml.match(/([A-ZÆØÅ][a-zæøå]+(?:\s[A-ZÆØÅ]?[a-zæøå]+)*\s+\d+[A-Z]?,\s+\d{4}\s+[A-ZÆØÅ][a-zæøå]+)/m)
+      const address = adresseMatch ? adresseMatch[1] : null
+
+      return { name, rating, reviewCount, hasPhone, hasWebsite, hasOpeningHours, address }
     })
 
-    if (!data.name && !data.rating) return null
+    console.log(`  GMB resultat: navn="${data.name}" rating=${data.rating} anm=${data.reviewCount}`)
 
-    console.log(`  GMB Puppeteer fant: ${data.name}, rating: ${data.rating}, anmeldelser: ${data.reviewCount}`)
+    if (!data.rating && !data.reviewCount) return null
 
     return {
       found: true,
@@ -146,19 +150,19 @@ export async function hentGmbData(
   if (googleApiKey) {
     // 1. Telefonnummer — eksakt treff om GMB har samme nummer som Brreg
     const normTlf = normaliserTelefon(telefon)
-    if (normTlf) placeId = await finnPlaceId(normTlf, 'phonenumber', googleApiKey)
+    if (normTlf) placeId = await finnPlaceId(normTlf, 'phonenumber', googleApiKey, bedriftNavn)
 
-    // 2. Navn + kommune
-    if (!placeId && kommune) placeId = await finnPlaceId(`${renNavn} ${kommune}`, 'textquery', googleApiKey)
+    // 2. Navn + poststed (mer spesifikt enn kommune)
+    if (!placeId && poststed) placeId = await finnPlaceId(`${renNavn} ${poststed}`, 'textquery', googleApiKey, bedriftNavn)
 
-    // 3. Navn + poststed
-    if (!placeId && poststed) placeId = await finnPlaceId(`${renNavn} ${poststed}`, 'textquery', googleApiKey)
+    // 3. Navn + kommune
+    if (!placeId && kommune) placeId = await finnPlaceId(`${renNavn} ${kommune}`, 'textquery', googleApiKey, bedriftNavn)
 
     // 4. Bare renset navn
-    if (!placeId) placeId = await finnPlaceId(renNavn, 'textquery', googleApiKey)
+    if (!placeId) placeId = await finnPlaceId(renNavn, 'textquery', googleApiKey, bedriftNavn)
 
     // 5. Fullt juridisk navn
-    if (!placeId && bedriftNavn !== renNavn) placeId = await finnPlaceId(bedriftNavn, 'textquery', googleApiKey)
+    if (!placeId && bedriftNavn !== renNavn) placeId = await finnPlaceId(bedriftNavn, 'textquery', googleApiKey, bedriftNavn)
   }
 
   try {
@@ -166,7 +170,7 @@ export async function hentGmbData(
       // Fallback: scrape Google Maps direkte med Puppeteer
       console.log(`  Places API fant ingen treff — prøver Google Maps scraping...`)
       const søk = kommune ? `${renNavn} ${kommune}` : poststed ? `${renNavn} ${poststed}` : renNavn
-      const puppeteerResultat = await skrapGmbViaMaps(søk)
+      const puppeteerResultat = await skrapGmbViaGoogleSøk(søk)
       if (puppeteerResultat) {
         cacheSet(cacheKey, puppeteerResultat)
         return puppeteerResultat
@@ -238,6 +242,41 @@ export async function finnNettside(bedriftNavn: string, googleApiKey: string): P
     if (website) cacheSet(key, website)
     return website
   } catch {
+    return null
+  }
+}
+
+export async function hentGmbDetaljerViaPlaceId(
+  placeId: string,
+  googleApiKey: string
+): Promise<{ reviewCount: number | null; rating: number | null; reviews: any[]; svarer: boolean } | null> {
+  try {
+    const detaljer = await axios.get('https://maps.googleapis.com/maps/api/place/details/json', {
+      params: {
+        place_id: placeId,
+        fields: 'rating,user_ratings_total,reviews',
+        key: googleApiKey,
+        language: 'no',
+      },
+      timeout: 6000,
+    })
+    const status = detaljer.data?.status
+    const r = detaljer.data?.result
+    console.log(`  Places Details status: ${status} | total: ${r?.user_ratings_total} | rating: ${r?.rating}`)
+    if (!r) return null
+    return {
+      rating: r.rating ?? null,
+      reviewCount: r.user_ratings_total ?? null,
+      reviews: (r.reviews || []).slice(0, 5).map((rv: any) => ({
+        author: rv.author_name || 'Anonym',
+        rating: rv.rating,
+        text: rv.text?.trim() || null,
+        relativeTime: rv.relative_time_description || null,
+      })),
+      svarer: (r.reviews || []).some((rv: any) => !!rv.owner_answer),
+    }
+  } catch (err: any) {
+    console.error('Places Details via placeId feil:', err.message)
     return null
   }
 }

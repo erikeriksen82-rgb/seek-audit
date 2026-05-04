@@ -99,14 +99,20 @@ export async function skrapNettside(url: string): Promise<WebsiteData> {
       // Telefon
       const hasClickablePhone = document.querySelectorAll('a[href^="tel:"]').length > 0
 
-      // CTA
+      // CTA — filtrér ut navigasjonselementer og tekst som ikke er en tydelig kjøpshandling
       const ctaKandidater = Array.from(document.querySelectorAll('a, button')).filter(el => {
-        const txt = el.textContent?.toLowerCase() || ''
+        const txt = (el.textContent?.trim().replace(/\s+/g, ' ') || '').toLowerCase()
+        if (txt.length > 40) return false
+        const erINavi = !!(el as HTMLElement).closest('nav, header, [role="navigation"], footer')
+        if (erINavi) return false
+        // Bruk eksplisitt norsk-safe ordgrense for «ring» (ø er ikke \w i JS)
+        const harRing = /(?:^|[ ,])ring(?:[ ,!?]|$)/.test(txt) || txt.startsWith('ring ')
         return txt.includes('kontakt') || txt.includes('befaring') || txt.includes('tilbud') ||
-          txt.includes('ring') || txt.includes('book') || txt.includes('send') || txt.includes('start') || txt.includes('kom i gang')
+          harRing || txt.includes('book') || txt.includes('send') ||
+          txt.includes('kom i gang') || txt === 'start'
       })
       const hasClearCTA = ctaKandidater.length > 0
-      const ctaText = ctaKandidater[0]?.textContent?.trim() ?? null
+      const ctaText = ctaKandidater[0]?.textContent?.trim().replace(/\s+/g, ' ') ?? null
 
       // Gratis befaring uten filter
       const harGratisBefaring = html.includes('gratis befaring')
